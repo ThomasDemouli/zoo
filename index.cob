@@ -79,7 +79,7 @@
                 01 repa_tamp.
                         02 fr_numR pic 9(9).
                         02 fr_description pic A(999).
-                        02 fr_jour pic 9.
+                        02 fr_jour pic 9(2).
                         02 fr_mois pic 9(2).
                         02 fr_annee pic 9(4).
                         02 fr_heure pic 9(4).
@@ -162,6 +162,33 @@
             CLOSE femployes
         END-IF.
             
+
+        MODIF_EMPLOYES.
+
+        DISPLAY 'Entrer id de l employé à modifier'
+        accept wId
+        PERFORM WITH TEST AFTER UNTIL wfin = 1 or idIdentique = 1
+         
+            
+             READ femployes
+                AT END  
+                        MOVE 1 TO wfin
+                NOT AT END
+                        IF wId = fem_numEmp THEN
+                          DISPLAY 'Entrer un nouveau numero de telephone'
+                          ACCEPT wtelephone
+                          OPEN OUTPUT femployes
+                          MOVE wtelephone TO fem_telephone
+                          WRITE empl_tamp
+                          END-WRITE
+                          CLOSE femployes
+                          MOVE 1 TO idIdentique
+                        END-IF                   
+             END-READ
+        END-PERFORM.
+        
+   *> MODIF EMPLOYÉ A REVOIR 
+
     
 
 
