@@ -79,7 +79,7 @@
                 01 repa_tamp.
                         02 fr_numR pic 9(9).
                         02 fr_description pic A(999).
-                        02 fr_jour pic 9.
+                        02 fr_jour pic 9(2).
                         02 fr_mois pic 9(2).
                         02 fr_annee pic 9(4).
                         02 fr_heure pic 9(4).
@@ -104,6 +104,9 @@
                 77 fsoinCR pic 9(2).
 
                 77 choix pic 9.
+                77 numIdentique pic 9.
+
+                77 wNumR pic 9(9).
 
         PROCEDURE DIVISION.
 
@@ -134,7 +137,18 @@
         END-EVALUATE.
 
         AJOUT_REPAS.
-        
+        OPEN I-O frepas
+        MOVE 0 TO numIdentique
+        PERFORM WITH TEST AFTER UNTIL numIdentique = 1
+                DISPLAY 'Le numéro de repas'
+                ACCEPT wNumR
+                MOVE wNumR to fr_numR
+                READ frepas
+                        INVALID KEY MOVE 1 TO numIdentique
+                        NOT INVALID KEY MOVE 0 TO numIdentique
+                END-READ
+        END-PERFORM
+
         SUPPRESSION_REPAS.
 
         AFFICHER_REPAS.
