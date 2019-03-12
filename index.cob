@@ -94,7 +94,7 @@
                         02 fs_jour pic 9(2).
                         02 fs_mois pic 9(2).
                         02 fs_annee pic 9(2).
-                        02 fs_numMedecin pic A(30).
+                        02 fs_numMedecin pic 9(4).
                         02 fs_type pic A(30).
                         02 fs_numA pic 9(4).
 
@@ -107,15 +107,27 @@
 
                 77 numeroSoinValide PIC 9.
                 77 numeroSoin PIC 9(4).
+                77 descriptionS pic A(20).
                 77 anneeSoin PIC 9(4).
-                77 moisSoin PIC 9(4).
+                77 moisSoin PIC 9(2).
+                77 jourSoin PIC 9(2).
+                77 jourMax PIC 9(2).
+                77 soigneurTrouve PIC 9(1).
+                77 numeroSoigneur PIC 9(4).
+                77 typeSoin PIC A(30).
+                77 animalTrouve PIC 9(1).
+                77 numeroAnimal PIC 9(4).
 
         PROCEDURE DIVISION.
 
+        OPEN INPUT fsoins
+        IF fsoinCR = 35 THEN
+                OPEN OUTPUT fsoins
+        END-IF
+        CLOSE fsoins.
 
         AJOUT_SOIN.
         OPEN I-O fsoins
-
         MOVE 0 TO numeroSoinValide
         PERFORM WITH TEST AFTER UNTIL numeroSoinValide = 1
                 DISPLAY "Quel sera le numéro de soin"
@@ -123,7 +135,7 @@
                 MOVE numeroSoin TO fs_numS
                 READ fsoins
                         INVALID KEY MOVE 1 TO numeroSoinValide
-                        NOT INVALID KEY MOVE 0 TO numeroSoinValide
+                        NOT INVALID KEY DISPLAY "Le soin existe déjà"
                 END-READ
         END-PERFORM
 
@@ -132,19 +144,81 @@
         MOVE descriptionS to fs_descriptif
 
         PERFORM WITH TEST AFTER UNTIL anneeSoin>1900 AND anneeSoin<2019
-                DISPLAY "Quelle est  l'année du soin ?"
+                DISPLAY "Quelle est  l année du soin ?"
                 ACCEPT anneeSoin
         END-PERFORM
         MOVE anneeSoin to fs_annee
 
-        PERFORM WITH TEST AFTER UNTIL moisSoin>1900 AND moisSoin<2019
-                DISPLAY "Quelle est  le mois du soin ?"
+        PERFORM WITH TEST AFTER UNTIL moisSoin>0 AND moisSoin<13
+                DISPLAY "Quel est  le mois du soin ?"
                 ACCEPT moisSoin
         END-PERFORM
         MOVE moisSoin to fs_mois
 
-        JE SUIS RENDU ICI ! IL FAUT GÉRER LES JOURS SUIVANT LE NUMÉRO DU MOIS (Ex : Juin = 30 jours)
+        EVALUATE moisSoin
+        WHEN 1 MOVE 31 TO jourMax
+        WHEN 2 MOVE 28 TO jourMax
+        WHEN 3 MOVE 31 TO jourMax
+        WHEN 4 MOVE 30 TO jourMax
+        WHEN 5 MOVE 31 TO jourMax
+        WHEN 6 MOVE 30 TO jourMax
+        WHEN 7 MOVE 31 TO jourMax
+        WHEN 8 MOVE 31 TO jourMax
+        WHEN 9 MOVE 30 TO jourMax
+        WHEN 10 MOVE 31 TO jourMax
+        WHEN 11 MOVE 30 TO jourMax
+        WHEN 12 MOVE 31 TO jourMax
+        END-EVALUATE
+
+        PERFORM WITH TEST AFTER UNTIL jourSoin>0 AND jourSoin<jourMax
+                DISPLAY "Quel est  le jour du soin ?"
+                ACCEPT jourSoin
+        END-PERFORM
+        MOVE jourSoin to fs_jour
+
+        MOVE 0 TO soigneurTrouve
+        PERFORM WITH TEST AFTER UNTIL soigneurTrouve = 1
+                DISPLAY "Quel est le numéro du soigneur ?"
+                ACCEPT numeroSoigneur
+                MOVE numeroSoigneur TO fem_numEmp
+      *         READ femployes
+      *         INVALID KEY DISPLAY "Le soigneur n existe pas"
+      *         NOT INVALID KEY MOVE 1 TO soigneurTrouve
+      *         END-READ
+                MOVE 1 TO soigneurTrouve
+        END-PERFORM
+        MOVE numeroSoigneur to fs_numMedecin
+
+        PERFORM WITH TEST AFTER UNTIL typeSoin>0 AND typeSoin<4
+                DISPLAY "Quel est le type du soin ?"
+                DISPLAY "1 : Soin Maladie"
+                DISPLAY "2 : Soin Blessure"
+                DISPLAY "3 : Vaccin"
+                ACCEPT typeSoin
+        END-PERFORM
+        MOVE jourSoin to fs_jour
+
+        EVALUATE moisSoin
+        WHEN 1 MOVE "maladie" TO typeSoin
+        WHEN 2 MOVE "blessure" TO typeSoin
+        WHEN 3 MOVE "vaccin" TO typeSoin
+        END-EVALUATE
+        MOVE typeSoin TO fs_type
+
+        MOVE 0 TO animalTrouve
+        PERFORM WITH TEST AFTER UNTIL animalTrouve = 1
+                DISPLAY "Quel est le numéro de l animal ?"
+                ACCEPT numeroAnimal
+                MOVE numeroAnimal TO fa_numA
+      *         READ fanimaux
+      *         INVALID KEY DISPLAY "L animal n existe pas"
+      *         NOT INVALID KEY MOVE 1 TO animalTrouve
+      *         END-READ
+                MOVE 1 TO animalTrouve
+        END-PERFORM
+        MOVE numeroAnimal to fs_numA
 
         WRITE soin_tamp
         END-WRITE
+        DISPLAY "Le soin a été créé !"
         CLOSE fsoins.
