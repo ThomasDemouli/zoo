@@ -136,11 +136,9 @@
         EVALUATE  choix
 	          WHEN "1" 
 		        PERFORM AJOUT_REPAS
-      *           WHEN "2" 
-      *	                PERFORM SUPPRESSION_REPAS
+                  WHEN "2" 
+                        PERFORM SUPPRESSION_REPAS
       *           WHEN "3"
-      *                 PERFORM AFFICHER_REPAS
-      *           WHEN "4"
       *                 PERFORM MODIFIER_REPAS
         END-EVALUATE.
 
@@ -205,9 +203,30 @@
         CLOSE frepas.
 
 
-      * SUPPRESSION_REPAS.
+        SUPPRESSION_REPAS.
+      * Demande du numéro du repas
+        DISPLAY 'Quel est le numéro du repas à supprimer ?'
+        ACCEPT wNumR.
 
-      * AFFICHER_REPAS.
+      * Recherche du repas
+        OPEN I-O frepas
+        ACCEPT wNumR
+        MOVE wNumR to fr_numR
+        MOVE 0 TO bool
+        READ frepas
+                INVALID KEY MOVE 0 TO bool
+                NOT INVALID KEY MOVE 1 TO bool
+        END-READ
+
+      * Suppression du repas
+        IF bool = 0 THEN
+                DISPLAY 'Ce repas n existe pas'
+        END-IF
+        IF bool = 1 THEN
+                
+                DISPLAY 'animal supprimé'
+                PERFORM MENU_REPAS
+        END-IF.
 
       * MODIFIER_REPAS.
 
