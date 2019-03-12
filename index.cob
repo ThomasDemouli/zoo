@@ -99,6 +99,9 @@
                         02 fs_numA pic 9(4).
 
         WORKING-STORAGE SECTION.
+                77 fin PIC 9.
+                77 choix PIC 9.
+                77 fdf PIC 9.
                 77 fenclCR pic 9(2).
                 77 fanimCR pic 9(2).
                 77 femplCR pic 9(2).
@@ -124,7 +127,25 @@
         IF fsoinCR = 35 THEN
                 OPEN OUTPUT fsoins
         END-IF
-        CLOSE fsoins.
+        CLOSE fsoins
+
+        MOVE 0 to fin.
+        PERFORM PROGRAMME_PRINCIPAL
+          UNTIL fin = 1.
+        STOP RUN.
+
+        PROGRAMME_PRINCIPAL.
+
+        DISPLAY "       0: Quitter,
+                 1 : Ajouter un soin,
+                 2 : Lire tous les soins".
+        ACCEPT choix.
+        EVALUATE choix
+        when "1" PERFORM AJOUT_SOIN
+        when "2" PERFORM READ_SOIN
+        when "0" move 1 to fin
+        when other DISPLAY "Commande non comprise" CHOIX
+        END-EVALUATE.
 
         AJOUT_SOIN.
         OPEN I-O fsoins
@@ -222,3 +243,33 @@
         END-WRITE
         DISPLAY "Le soin a été créé !"
         CLOSE fsoins.
+
+
+
+        READ_SOIN.
+        OPEN INPUT fsoins
+        MOVE 0 TO fdf
+        PERFORM WITH TEST AFTER UNTIL fdf=1
+            READ fsoins
+                 AT END
+                       MOVE 1 TO fdf
+                       DISPLAY "Fin du fichier"
+                 NOT AT END
+                       DISPLAY "SOIN n°"
+                       DISPLAY fs_numS
+                       DISPLAY fs_type
+                       DISPLAY fs_descriptif
+                       DISPLAY "Le "
+                       DISPLAY fs_jour
+                       DISPLAY fs_mois
+                       DISPLAY fs_annee
+                       DISPLAY "Par le médecin n°"
+                       DISPLAY fs_numMedecin
+                       DISPLAY "Animal n°"
+                       DISPLAY fs_numA
+            END-READ
+        END-PERFORM
+        CLOSE fsoins.
+
+
+        ATTENTION, LA METHODE 2 NE MARCHE PAS !!!!!!!!!!!
