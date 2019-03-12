@@ -104,9 +104,17 @@
                 77 fsoinCR pic 9(2).
 
                 77 choix pic 9.
-                77 numIdentique pic 9.
+                77 bool pic 9.
 
                 77 wNumR pic 9(9).
+                77 wDesc pic A(999).
+                77 wNumEmp pic 9(4).
+                77 wNumA pic 9(3).
+                77 wPrix pic 9(4).
+
+                77 wHeure pic 9(4).
+                77 wH pic 9(2).
+                77 wM pic 9(2).
 
         PROCEDURE DIVISION.
 
@@ -128,29 +136,94 @@
         EVALUATE  choix
 	          WHEN "1" 
 		        PERFORM AJOUT_REPAS
-	          WHEN "2" 
-		        PERFORM SUPPRESSION_REPAS
-                  WHEN "3"
-                        PERFORM AFFICHER_REPAS
-                  WHEN "4"
-                        PERFORM MODIFIER_REPAS
+      *           WHEN "2" 
+      *	                PERFORM SUPPRESSION_REPAS
+      *           WHEN "3"
+      *                 PERFORM AFFICHER_REPAS
+      *           WHEN "4"
+      *                 PERFORM MODIFIER_REPAS
         END-EVALUATE.
 
         AJOUT_REPAS.
         OPEN I-O frepas
-        MOVE 0 TO numIdentique
-        PERFORM WITH TEST AFTER UNTIL numIdentique = 1
+
+      * Demande du numéro du repas
+        MOVE 0 TO bool
+        PERFORM WITH TEST AFTER UNTIL bool = 1
                 DISPLAY 'Le numéro de repas'
                 ACCEPT wNumR
                 MOVE wNumR to fr_numR
                 READ frepas
-                        INVALID KEY MOVE 1 TO numIdentique
-                        NOT INVALID KEY MOVE 0 TO numIdentique
+                        INVALID KEY MOVE 1 TO bool
+                        NOT INVALID KEY MOVE 0 TO bool
                 END-READ
         END-PERFORM
 
-        SUPPRESSION_REPAS.
+      * Demande de la description du repas
+        DISPLAY 'La descritpion du repas'
+        ACCEPT wDesc
+        MOVE wDesc to fr_description
 
-        AFFICHER_REPAS.
+      * Demande de la date
 
-        MODIFIER_REPAS.
+      * Demande de l'heure
+        PERFORM DEMANDER_HEURE
+        MOVE wHeure to fr_heure
+        
+      * Demande du numéro du soigneur
+        MOVE 0 TO bool
+        OPEN OUTPUT femployes
+        PERFORM WITH TEST AFTER UNTIL bool = 1
+                DISPLAY 'Le numéro du soigneur'
+                ACCEPT wNumEmp
+                MOVE wNumEmp to fr_numSoigneur
+                READ femployes
+                        INVALID KEY MOVE 0 TO bool
+                        NOT INVALID KEY MOVE 1 TO bool
+                END-READ
+        END-PERFORM
+        CLOSE femployes
+
+      * Demande du numéro de l'animal
+        MOVE 0 TO bool
+        OPEN OUTPUT fanimaux
+        PERFORM WITH TEST AFTER UNTIL bool = 1
+                DISPLAY 'Le numéro de l animal'
+                ACCEPT wNumA
+                MOVE wNumA to fr_numAnimal
+                READ fanimaux
+                        INVALID KEY MOVE 0 TO bool
+                        NOT INVALID KEY MOVE 1 TO bool
+                END-READ
+        END-PERFORM
+        CLOSE fanimaux
+
+      * Demande du prix de repas
+        DISPLAY 'Le prix du repas'
+        ACCEPT wPrix
+
+        CLOSE frepas.
+
+
+      * SUPPRESSION_REPAS.
+
+      * AFFICHER_REPAS.
+
+      * MODIFIER_REPAS.
+
+        DEMANDER_HEURE.
+      * Demande de l'heure
+        PERFORM WITH TEST AFTER UNTIL wH <= 23 AND wH > 0
+                DISPLAY 'L heure'
+                ACCEPT wH
+        END-PERFORM
+
+      * Demande des minutes
+        PERFORM WITH TEST AFTER UNTIL wM <= 59 AND wM > 0
+                DISPLAY 'Les minutes'
+                ACCEPT wM
+        END-PERFORM
+
+      * Calcul de l'heure
+        MULTIPLY wH BY 100 GIVING wHeure
+        ADD wM TO wHeure GIVING wHeure.
