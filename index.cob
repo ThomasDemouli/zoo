@@ -116,6 +116,7 @@
                 77 wHeure pic 9(4).
                 77 wH pic 9(2).
                 77 wM pic 9(2).
+                77 wPhrase pic A(40).
 
         PROCEDURE DIVISION.
 
@@ -133,7 +134,13 @@
                         OPEN OUTPUT femployes    
                 END-IF
         CLOSE femployes
+        OPEN INPUT fanimaux        
+                IF fanimCR = 35 THEN
+                        OPEN OUTPUT fanimaux    
+                END-IF
+        CLOSE fanimaux
 
+        DISPLAY 'Que voulez-vous faire ?'
         DISPLAY '1 = AJOUT REPAS'
         DISPLAY '2 = SUPPRESSION REPAS'
         DISPLAY '3 = AFFICHER REPAS'
@@ -145,7 +152,7 @@
                   WHEN "2" 
                         PERFORM SUPPRESSION_REPAS
                   WHEN "3"
-                        PERFORM AFFICHAGE
+                        PERFORM AFFICHAGE_REPAS
       *           WHEN "4"
       *                 PERFORM MODIFIER_REPAS
         END-EVALUATE.
@@ -196,6 +203,17 @@
         CLOSE femployes
 
       * Demande du numéro de l'animal
+      * MOVE 0 TO bool
+      * OPEN OUTPUT fanimaux
+      * PERFORM WITH TEST AFTER UNTIL bool = 1
+      *         DISPLAY 'Le numéro de l'animal'
+      *         ACCEPT wNumA
+      *         MOVE wNumA to fr_numAnimal
+      *         READ fanimaux
+      *                 INVALID KEY MOVE 0 TO bool
+      *                 NOT INVALID KEY MOVE 1 TO bool
+      *         END-READ
+      * END-PERFORM
 
         DISPLAY 'Le numéro de l animal'
         ACCEPT wNumA
@@ -215,11 +233,10 @@
         SUPPRESSION_REPAS.
       * Demande du numéro du repas
         DISPLAY 'Quel est le numéro du repas à supprimer ?'
-        ACCEPT wNumR.
+        ACCEPT wNumR
 
       * Recherche du repas
         OPEN I-O frepas
-        ACCEPT wNumR
         MOVE wNumR to fr_numR
         MOVE 0 TO bool
         READ frepas
@@ -230,35 +247,15 @@
       * Suppression du repas
         IF bool = 0 THEN
                 DISPLAY 'Ce repas n existe pas'
-                CLOSE frepas
         END-IF
         IF bool = 1 THEN
-                
+                DELETE frepas RECORD
                 DISPLAY 'repas supprimé'
-                CLOSE frepas
-                PERFORM MENU_REPAS
-        END-IF.
+        END-IF
+        CLOSE frepas.
 
-      * MODIFIER_REPAS.
-
-        DEMANDER_HEURE.
-      * Demande de l'heure
-        PERFORM WITH TEST AFTER UNTIL wH <= 23 AND wH > 0
-                DISPLAY 'L heure'
-                ACCEPT wH
-        END-PERFORM
-
-      * Demande des minutes
-        PERFORM WITH TEST AFTER UNTIL wM <= 59 AND wM > 0
-                DISPLAY 'Les minutes'
-                ACCEPT wM
-        END-PERFORM
-
-      * Calcul de l'heure
-        MULTIPLY wH BY 100 GIVING wHeure
-        ADD wM TO wHeure GIVING wHeure.
-
-        AFFICHAGE.
+        AFFICHAGE_REPAS.
+      * Parcours séquentiel des repas
         OPEN INPUT frepas
         MOVE 0 TO wfin
         PERFORM WITH TEST AFTER UNTIL wfin = 1
@@ -266,7 +263,29 @@
                 AT END
                         MOVE 1 TO wfin
                 NOT AT END
-                        DISPLAy fr_numR
+                        STRING fr_numR "|" fr_jour "|" fr_mois "|" 
+                        fr_annee "|" fr_heure "|" fr_numSoigneur "|" 
+                        fr_numAnimal "|" fr_prixRepas INTO wPhrase
+                        DISPLAY wPhrase
                 END-READ
         END-PERFORM
         CLOSE frepas.
+
+      * MODIFIER_REPAS.
+
+        DEMANDER_HEURE.
+      * Demande de l'heure
+        PERFORM WITH TEST AFTER UNTIL wH <= 23 AND wH >= 0
+                DISPLAY 'L heure'
+                ACCEPT wH
+        END-PERFORM
+
+      * Demande des minutes
+        PERFORM WITH TEST AFTER UNTIL wM <= 59 AND wM >= 0
+                DISPLAY 'Les minutes'
+                ACCEPT wM
+        END-PERFORM
+
+      * Calcul de l'heure
+        MULTIPLY wH BY 100 GIVING wHeure
+        ADD wM TO wHeure GIVING wHeure.
