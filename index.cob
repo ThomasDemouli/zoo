@@ -116,7 +116,7 @@
                 77 wHeure pic 9(4).
                 77 wH pic 9(2).
                 77 wM pic 9(2).
-                77 wPhrase pic A(40).
+                77 wPhrase pic A(1040).
 
         PROCEDURE DIVISION.
 
@@ -153,8 +153,8 @@
                         PERFORM SUPPRESSION_REPAS
                   WHEN "3"
                         PERFORM AFFICHAGE_REPAS
-      *           WHEN "4"
-      *                 PERFORM MODIFIER_REPAS
+                  WHEN "4"
+                        PERFORM MODIFIER_REPAS
         END-EVALUATE.
 
         AJOUT_REPAS.
@@ -263,15 +263,87 @@
                 AT END
                         MOVE 1 TO wfin
                 NOT AT END
-                        STRING fr_numR "|" fr_jour "|" fr_mois "|" 
-                        fr_annee "|" fr_heure "|" fr_numSoigneur "|" 
-                        fr_numAnimal "|" fr_prixRepas INTO wPhrase
+                        STRING fr_numR "|" fr_description "|" fr_jour
+                        "|" fr_mois "|" fr_annee "|" fr_heure "|" 
+                        fr_numSoigneur "|" fr_numAnimal "|" fr_prixRepas
+                        INTO wPhrase
                         DISPLAY wPhrase
                 END-READ
         END-PERFORM
         CLOSE frepas.
 
-      * MODIFIER_REPAS.
+        MODIFIER_REPAS.
+      * Demande du numéro du repas
+        DISPLAY 'Quel est le numéro du repas à modifier ?'
+        ACCEPT wNumR
+
+      * Recherche du repas
+        OPEN I-O frepas
+        MOVE wNumR to fr_numR
+        MOVE 0 TO bool
+        READ frepas
+                INVALID KEY MOVE 0 TO bool
+                NOT INVALID KEY MOVE 1 TO bool
+        END-READ
+
+      * Suppression du repas
+        IF bool = 0 THEN
+                DISPLAY 'Ce repas n existe pas'
+        END-IF
+        IF bool = 1 THEN
+                DISPLAY 'Que voulez-vous modifier ?'
+                DISPLAY '1 = La description'
+                DISPLAY '2 = La date'
+                DISPLAY '3 = L heure'
+                DISPLAY '4 = Le numero du soigneur'
+                DISPLAY '5 = Le numero de l animal'
+                DISPLAY '6 = Le prix du repas'
+                ACCEPT choix
+                EVALUATE  choix
+      * Modification de la description
+	                  WHEN "1"
+                                DISPLAY 'Nouvelle description :'
+                                ACCEPT wDesc
+                                MOVE wDesc to fr_description
+                                DISPLAY 'Description modifiée'
+      * Modification de la date
+	                  WHEN "2" 
+                                DISPLAY 'Nouvelle date :'
+                                DISPLAY 'Date modifiée'
+
+      * Modification de l'heure
+	                  WHEN "3" 
+                                DISPLAY 'Nouvelle heure :'
+                                PERFORM DEMANDER_HEURE
+                                MOVE wHeure to fr_heure
+                                DISPLAY 'Heure modifiée'
+
+      * Modification du numéro du soigneur
+	                  WHEN "4" 
+                                DISPLAY 'Nouveau numéro soigneur :'
+                                ACCEPT wNumEmp
+                                MOVE wNumEmp to fr_numSoigneur
+                                DISPLAY 'Numéro soigneur modifié'
+
+      * Modification du numéro de l'animal
+	                  WHEN "5" 
+                                DISPLAY 'Nouveau numéro animal :'
+                                ACCEPT wNumA
+                                MOVE wNumA to fr_numAnimal
+                                DISPLAY 'Numéro animal modifié'
+
+      * Modification du prix du repas
+	                  WHEN "6" 
+                                DISPLAY 'Nouveau prix :'
+                                ACCEPT wPrix
+                                MOVE wPrix to fr_prixRepas
+                                DISPLAY 'prix du repas modifié'
+
+                END-EVALUATE
+        END-IF
+        REWRITE repa_tamp
+        END-REWRITE
+        CLOSE frepas.
 
         DEMANDER_HEURE.
       * Demande de l'heure
