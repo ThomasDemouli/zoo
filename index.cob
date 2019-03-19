@@ -141,6 +141,40 @@
                 77 typeSoinValide PIC 9(1).
                 77 phraseSoin PIC A(999).
 
+      * variable ajout_animal / modif_animal / suppr_animal
+                77 numeroAValide pic 9.
+                77 enclosNonExistant pic 9.
+                77 fdfA pic 9.
+                77 numA pic 9(3).
+                77 surnomA pic A(30).
+                77 aNaissA pic 9(4).
+                77 especeA pic A(30).
+                77 numEnclosA pic 9(3).
+                77 frequenceRepasA pic 9(3).
+                77 dernierRepasA pic 9(9).
+                77 dernierVaccinA pic 9(9).
+                77 descriptionA pic A(999).
+
+      * variable capacite_enclos
+                77 CE pic 9.
+                77 enclosComplet pic 9.
+                77 cptCE pic 9(3).
+                77 capaciteEnclos pic 9(2).
+
+      * variable enclos / employes
+                77 wId pic 9(3).
+                77 wNomEmpl pic A(25).
+                77 wPrenomEmpl pic A(25).
+                77 wDatenaissance pic A(10).
+                77 wDateEmbauche pic A(10).       
+                77 wtelephone pic 9(10).
+                77 wtype pic A(20).
+                77 wCapEnclos pic 9(2).
+                77 wEtatEnclos pic A(20).
+
+                77 idIdentique pic 9.
+                77 idNonIdentique pic 9.
+
         PROCEDURE DIVISION.
 
         PERFORM APPELER_MENU
