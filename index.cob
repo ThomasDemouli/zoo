@@ -114,8 +114,10 @@
                 77 wEtatEnclos pic A(20).
 
                 77 idIdentique pic 9.
+                77 idNonIdentique pic 9.
                 77 wfin pic 9.
                 77 choix pic 9.
+                77 choix2 pic 9.
 
         PROCEDURE DIVISION.
 
@@ -125,24 +127,20 @@
 
 
         AJOUT_EMPLOYES.
-    
-        OPEN INPUT femployes
-        MOVE 0 TO idIdentique
-        MOVE 0 TO wfin
-        DISPLAY 'Donner un id à l employé'
-        ACCEPT wId
-        PERFORM WITH TEST AFTER UNTIL wfin = 1 or idIdentique = 1 
-         
-            
-             READ femployes
-                AT END  
-                        MOVE 1 TO wfin
-                NOT AT END
-                        IF wId = fem_numEmp THEN
-                             MOVE 1 TO idIdentique
-                        END-IF                   
-             END-READ
+        OPEN i-o femployes
+        MOVE 0 TO idNonIdentique
+
+        PERFORM WITH TEST AFTER UNTIL idNonIdentique = 1
+            DISPLAY 'Donner un id à l employé'
+            ACCEPT wId
+            MOVE wId to fem_numEmp
+            READ femployes
+                INVALID KEY MOVE 1 TO idNonIdentique
+                NOT INVALID KEY DISPLAY "l'employé existe deja" 
+            END-READ
+           
         END-PERFORM
+
         DISPLAY 'Nom de l employe'
         ACCEPT wNomEmpl
         DISPLAY 'Prenom de l employe'
@@ -155,9 +153,8 @@
         ACCEPT wtelephone
         DISPLAY 'Type de l employé'
         ACCEPT wType
-
-        IF idIdentique = 0 THEN 
-            OPEN OUTPUT femployes
+ 
+        IF idNonIdentique = 1 THEN  
             MOVE wId TO fem_numEmp
             MOVE wNomEmpl TO fem_nom
             MOVE wPrenomEmpl TO fem_prenom
@@ -167,113 +164,126 @@
             MOVE wType TO fem_type
             WRITE empl_tamp
             END-WRITE
-            CLOSE femployes
-        END-IF.
+        END-IF
+        CLOSE femployes.
+      
             
+        MODIF_EMPLOYES.
+        OPEN i-o femployes
+        MOVE 0 TO idIdentique
+            PERFORM WITH TEST AFTER UNTIL idIdentique = 1
+                DISPLAY 'Donner l id de l employé à modifier '
+                ACCEPT wId
+                MOVE wId to fem_numEmp
+                READ femployes
+                INVALID KEY  DISPLAY "l'employé n'existe pas" 
+                NOT INVALID KEY MOVE 1 TO idIdentique 
+                END-READ
+            END-PERFORM
 
-        MODIF_EMPLOYES_TEL.
-        DISPLAY 'Entrer id de l employé à modifier'
-        accept wId
-        PERFORM WITH TEST AFTER UNTIL wfin = 1 or idIdentique = 1
-             READ femployes
-                AT END  
-                        MOVE 1 TO wfin
-                NOT AT END
-                        IF wId = fem_numEmp THEN
-                        DISPLAY "Entrer un nouveau numero de telephone"
-                          ACCEPT wtelephone
-                          OPEN OUTPUT femployes
-                          MOVE wtelephone TO fem_telephone
-                          WRITE empl_tamp
-                          END-WRITE
-                          CLOSE femployes
-                          MOVE 1 TO idIdentique
-                        END-IF                   
-             END-READ
-        END-PERFORM.
+          IF idIdentique = 1 THEN 
+            DISPLAY 'Que voulez vous modifier ?'
+            DISPLAY '1 : Son nom ? ?'
+            DISPLAY '2 : Son numéro de téléphone?'
+            DISPLAY '3 : Son type ?'
 
+            ACCEPT choix
+            EVALUATE  choix
+            WHEN "1" 
+	            DISPLAY 'Nouveau nom à l employé'
+                ACCEPT wNomEmpl
+                MOVE wNomEmpl to fem_nom
+            WHEN "2" 
+	            DISPLAY 'Nouveau numéro de tél de l employé'
+               ACCEPT wtelephone
+               MOVE wtelephone TO fem_telephone
+            WHEN "3" 
+	            DISPLAY 'Nouveau type à l employé'
+               ACCEPT wtype
+               MOVE wtype TO fem_type
+            END-EVALUATE
+        
+        END-IF
+        REWRITE empl_tamp
+        END-REWRITE
+        CLOSE femployes.
 
-        MODIF_EMPLOYES_ROLE.
-
-        DISPLAY 'Entrer id de l employé à modifier'
-        accept wId
-        PERFORM WITH TEST AFTER UNTIL wfin = 1 or idIdentique = 1
-             READ femployes
-                AT END  
-                        MOVE 1 TO wfin
-                NOT AT END
-                        IF wId = fem_numEmp THEN
-                          DISPLAY 'Entrer un nouveau type'
-                          ACCEPT wtype
-                          OPEN OUTPUT femployes
-                          MOVE wtype TO fem_type
-                          WRITE empl_tamp
-                          END-WRITE
-                          CLOSE femployes
-                          MOVE 1 TO idIdentique
-                        END-IF                   
-             END-READ
-        END-PERFORM.
+        
+     
         
 
         AJOUT_ENCLOS.
         OPEN i-o fenclos
-        MOVE 0 TO idIdentique
+        MOVE 0 TO idNonIdentique
 
-        PERFORM WITH TEST AFTER UNTIL idIdentique = 1
+        PERFORM WITH TEST AFTER UNTIL idNonIdentique = 1
             DISPLAY 'Donner un id à l enclos'
             ACCEPT wId
             MOVE wId to fe_numE
             READ fenclos
-            INVALID KEY  MOVE 1 TO idIdentique
-            NOT INVALID KEY DISPLAY "l'enclos existe deja"
-              
+                INVALID KEY  MOVE 1 TO idNonIdentique
+                NOT INVALID KEY DISPLAY "l'enclos existe deja"
             END-READ
         END-PERFORM
-        CLOSE fenclos
+        
         DISPLAY 'Donner une capacité à l enclos'
         ACCEPT wCapEnclos
         DISPLAY 'Etat de l enclos'
         ACCEPT wEtatEnclos
-        CLOSE fenclos
+        
  
-         IF idIdentique = 1 THEN 
-            OPEN i-o fenclos
+         IF idNonIdentique = 1 THEN 
+           
             MOVE wId TO fe_numE
             MOVE wCapEnclos TO fe_capacite
             MOVE wEtatEnclos TO fe_etat
             WRITE encl_tamp
             END-WRITE
-            CLOSE fenclos
+            
         END-IF.
+        CLOSE fenclos.
 
 
         MODIF_ENCLOS.
-
         OPEN i-o fenclos
+        MOVE 0 TO idIdentique
             PERFORM WITH TEST AFTER UNTIL idIdentique = 1
                 DISPLAY 'Donner l id de l enclos à modifier '
                 ACCEPT wId
                 MOVE wId to fe_numE
                 READ fenclos
-                INVALID KEY DISPLAY "l'enclos n'existe pas"
+                INVALID KEY  DISPLAY "l'enclos n'existe pas" 
                 NOT INVALID KEY MOVE 1 TO idIdentique 
                 END-READ
             END-PERFORM
-            DISPLAY 'Donner un nouvel etat à  l enclos'
-            ACCEPT wEtatEnclos
-            IF idIdentique = 1 THEN 
+
+          IF idIdentique = 1 THEN 
+            DISPLAY 'Que voulez vous modifier ?'
+            DISPLAY '1 : Sa capacité ? ?'
+            DISPLAY '2 : Son etat'
+           
+
+            ACCEPT choix
+            EVALUATE  choix
+            WHEN "1" 
+	            DISPLAY 'Nouvelle capacité de l enclos'
+                ACCEPT wCapEnclos
+                MOVE wCapEnclos to fe_capacite
+            WHEN "2" 
+	            DISPLAY 'Nouvel etat de l enclos'
+               ACCEPT wEtatEnclos
+               MOVE wEtatEnclos TO fe_etat
+            
+            END-EVALUATE
         
-                MOVE wEtatEnclos TO fe_etat
-                REWRITE encl_tamp
-                END-REWRITE
-                
-            END-IF
+        END-IF
+        REWRITE encl_tamp
+        END-REWRITE
         CLOSE fenclos.
 
 
-       
-        
+
+
 
         AFFICHAGE_ENCLOS.
         OPEN INPUT fenclos
@@ -291,19 +301,64 @@
         CLOSE fenclos.
 
         AFFICHAGE_EMPLOYES.
-        OPEN INPUT fenclos
+        OPEN INPUT femployes
         MOVE 0 TO wfin
         PERFORM WITH TEST AFTER UNTIL wfin = 1
-                READ fenclos next
+                READ femployes next
                 AT END  
                         MOVE 1 TO wfin
                 NOT AT END
-                        DISPLAY fe_numE
-                        DISPLAY fe_capacite
-                        DISPLAY fe_etat
+                        DISPLAY fem_numEmp
+                        DISPLAY fem_nom
+                        DISPLAY fem_prenom
+                        DISPLAY fem_dateNaissance  
+                        DISPLAY fem_dateEmbauche  
+                        DISPLAY fem_telephone
+                        DISPLAY fem_type
                 END-READ
         END-PERFORM
-        CLOSE fenclos.
+        CLOSE femployes.
+
+        SUPPRESSION_ENCLOS.
+        OPEN i-o fenclos
+        MOVE 0 TO idIdentique
+            PERFORM WITH TEST AFTER UNTIL idIdentique = 1
+                DISPLAY 'Donner l id de l enclos à supprimer '
+                ACCEPT wId
+                MOVE wId to fe_numE
+                READ fenclos
+                INVALID KEY  DISPLAY "l'enclos n'existe pas" 
+                NOT INVALID KEY MOVE 1 TO idIdentique 
+                END-READ
+            END-PERFORM
+
+        if idIdentique = 1 then
+            delete fenclos record 
+        end-if
+        close fenclos.
+
+        SUPPRESSION_EMPLOYES.
+        OPEN i-o femployes
+        MOVE 0 TO idIdentique
+            PERFORM WITH TEST AFTER UNTIL idIdentique = 1
+                DISPLAY 'Donner l id de l employes à supprimer '
+                ACCEPT wId
+                MOVE wId to fem_numEmp
+                READ femployes
+                INVALID KEY  DISPLAY "l'employé n'existe pas" 
+                NOT INVALID KEY MOVE 1 TO idIdentique 
+                END-READ
+            END-PERFORM
+
+        if idIdentique = 1 then
+            delete femployes record 
+        end-if
+        close femployes.
+            
+
+  
+
+      
 
         MENU_PRINCIPAL.
         
@@ -312,24 +367,39 @@
                         OPEN OUTPUT fenclos      
                 END-IF
         CLOSE fenclos
+        OPEN INPUT femployes        
+                IF femplCR = 35 THEN
+                        OPEN OUTPUT femployes      
+                END-IF
+        CLOSE femployes
+
 
         DISPLAY '1 = AJOUT ENCLOS'
-        DISPLAY '2 = MODIF EMPLOYES TEL'
-        DISPLAY '3 = AJOUT EMPLOYES'
-        DISPLAY '4 = affichage enclos'
-        DISPLAY '5 = modif enclos'
+        DISPLAY '2 = MODIFICATION ENCLOS'
+        DISPLAY '3 = AFFICHAGE ENCLOS'
+        DISPLAY '4 = AJOUT EMPLOYES'
+        DISPLAY '5 = MODIF EMPLOYES '
+        DISPLAY '6 = AFFICHAGE EMPLOYES'
+        DISPLAY '7 = SUPPRIMER ENCLOS'
+        DISPLAY '8 = SUPPRIMER EMPLOYES'
         ACCEPT choix
         EVALUATE  choix
 	          WHEN "1" 
 		        PERFORM AJOUT_ENCLOS
 	          WHEN "2" 
-		        PERFORM MODIF_EMPLOYES_TEL
+		        PERFORM MODIF_ENCLOS
               WHEN "3"
-                PERFORM AJOUT_EMPLOYES 
-              WHEN "4"
                 PERFORM AFFICHAGE_ENCLOS
+              WHEN "4"
+                PERFORM AJOUT_EMPLOYES
               WHEN "5"
-                PERFORM MODIF_ENCLOS
+                PERFORM MODIF_EMPLOYES
+              WHEN "6"
+                PERFORM AFFICHAGE_EMPLOYES
+              WHEN "7"
+                PERFORM SUPPRESSION_ENCLOS
+              WHEN "8"
+                PERFORM SUPPRESSION_EMPLOYES
         END-EVALUATE.
 
 
