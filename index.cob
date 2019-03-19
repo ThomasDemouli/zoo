@@ -99,7 +99,8 @@
         WORKING-STORAGE SECTION.
       * variable menu
                 77 fin pic 9.
-                77 choix pic 9(2).       
+                77 choix pic 9(2). 
+                77 choixModif pic 9.      
 
 
                 77 fenclCR pic 9(2).
@@ -111,7 +112,6 @@
       * variable ajout_animal / modif_animal / suppr_animal
                 77 numeroAValide pic 9.
                 77 enclosNonExistant pic 9.
-                77 fdfA pic 9.
                 77 numA pic 9(3).
                 77 surnomA pic A(30).
                 77 aNaissA pic 9(4).
@@ -183,21 +183,19 @@
 
         ACCEPT choix
         EVALUATE choix
-        when "1" PERFORM AJOUT_ANIMAL
-        when "2" PERFORM SUPPRIMER_ANIMAL
-        when "3" PERFORM CAPACITE_ENCLOS
-        when "4" PERFORM AJOUT_ENCLOS
-        when "5" PERFORM MODIF_ENCLOS
-        when "6" PERFORM AFFICHAGE_ENCLOS
-        when "7" PERFORM AFFICHER_ANIMAL
-        when "8" PERFORM AFFICHER_TOUS_LES_ANIMAUX
-        when "9" PERFORM AFFICHER_TOUS_LES_ANIMAUX
+        when "01" PERFORM AJOUT_ANIMAL
+        when "02" PERFORM SUPPRIMER_ANIMAL
+        when "03" PERFORM CAPACITE_ENCLOS
+        when "04" PERFORM AJOUT_ENCLOS
+        when "05" PERFORM MODIF_ENCLOS
+        when "06" PERFORM AFFICHAGE_ENCLOS
+        when "07" PERFORM AFFICHER_ANIMAL
+        when "08" PERFORM AFFICHER_TOUS_LES_ANIMAUX
+        when "09" PERFORM MODIFIER_ANIMAL
         when "10" PERFORM AFFICHER_TOUS_LES_ANIMAUX
         when "11" PERFORM AFFICHER_TOUS_LES_ANIMAUX
         when "12" PERFORM AFFICHER_TOUS_LES_ANIMAUX
         when "13" PERFORM AFFICHER_TOUS_LES_ANIMAUX
-        when "8" PERFORM AFFICHER_TOUS_LES_ANIMAUX
-        when "8" PERFORM AFFICHER_TOUS_LES_ANIMAUX
         when "0" move 1 to fin
         when other DISPLAY "Commande non comprise" CHOIX
         END-EVALUATE.
@@ -214,70 +212,70 @@
                      NOT INVALID KEY MOVE 0 TO numeroAValide
              END-READ
         END-PERFORM
-        MOVE numA TO fa_numA        
-
+     
         DISPLAY "Quel est son surnom?"
         ACCEPT surnomA
-        MOVE surnomA to fa_surnom
+        
 
         PERFORM WITH TEST AFTER UNTIL aNaissA>1800 AND aNaissA<2019
              DISPLAY "Quelle est son année de naissance?"
              ACCEPT aNaissA
         END-PERFORM
 
-        MOVE aNaissA to fa_anneeNaissance 
+        
         DISPLAY "Quel est son espece?"
         ACCEPT especeA
-        MOVE especeA to fa_espece
+        
 
+        MOVE 1 TO enclosComplet
         MOVE 0 TO enclosNonExistant
-        MOVE 0 TO fdfA
         OPEN INPUT fenclos
-        PERFORM WITH TEST AFTER UNTIL enclosNonExistant = 1 OR fdfA=1
-        OR enclosComplet = 0
+        PERFORM WITH TEST AFTER UNTIL enclosNonExistant = 1
+        AND enclosComplet = 0
             DISPLAY "Dans quel enclos est-il?"
             ACCEPT numEnclosA
+            MOVE numEnclosA to fe_numE
             READ fenclos
-              AT END
-                    MOVE 1 TO fdfA
-              NOT AT END
-                IF fa_numEnclos = numEnclosA THEN 
-                    MOVE 1 TO enclosNonExistant
+                INVALID KEY DISPLAY "Enclos non existant"
+                NOT INVALID KEY  
+                MOVE 1 TO enclosNonExistant 
+                MOVE numEnclosA TO CE
+                PERFORM CAPACITE_ENCLOS
+                IF enclosComplet = 1 THEN
+                    DISPLAY "Cet enclos est complet"
                 END-IF
-           END-READ     
-            MOVE numEnclosA TO CE
-            PERFORM CAPACITE_ENCLOS
-            IF enclosComplet = 1 THEN
-                DISPLAY "Cet enclos est complet"
-            END-IF
+            END-READ 
         END-PERFORM
-        MOVE numEnclosA to fa_numEnclos
         CLOSE fenclos
+        MOVE numEnclosA to fa_numEnclos
+        DISPLAY numEnclosA
         DISPLAY "Quel est sa fréquence de repas (en nombre de jours)?"
         ACCEPT frequenceRepasA
         MOVE frequenceRepasA to fa_frequenceRepas
-
-              
+        MOVE especeA to fa_espece
+        MOVE surnomA to fa_surnom    
+        MOVE numA TO fa_numA        
+        MOVE aNaissA to fa_anneeNaissance   
         MOVE 0 to fa_dernierRepas
         MOVE 0 to fa_dernierVaccin  
-
+        DISPLAY fa_numA
         WRITE anim_tamp
-
+                INVALID KEY DISPLAY "ERREUR : animal non ajouté"
+                NOT INVALID KEY DISPLAY "Animal ajouté !"
         END-WRITE
-        DISPLAY "Animal ajouté !"
+        DISPLAY 
         CLOSE fanimaux.
             
       * procedure determinant si un enclos est complet ou pas
        CAPACITE_ENCLOS.
        OPEN INPUT fenclos
-       MOVE 0 TO enclosComplet
        MOVE CE to fe_numE
        READ fenclos
-            INVALID KEY DISPLAY "Cet enclos n'existe pas" 
+            INVALID KEY MOVE 0 to enclosNonExistant
             NOT INVALID KEY MOVE fe_capacite TO capaciteEnclos
        END-READ
-      *Ajouter un if enclos existe (pour enlever l'affichage enclos complet lorsque l'enclos n'existe pas)
        CLOSE fenclos
+      *on verifie la place restante 
        MOVE CE TO fa_numEnclos
        MOVE 0 TO fdf
        START fanimaux, KEY IS = fa_numEnclos
@@ -291,24 +289,10 @@
        END-START 
        IF capaciteEnclos - cptCE <=0 THEN 
                 MOVE 1 TO enclosComplet
-       ELSE
+ 
+           ELSE
                 MOVE 0 TO enclosComplet
        END-IF.
-      
-       MODIF_ANIMAL.
-      *   OPEN I-O fanimaux
-      *  MOVE 0 TO numeroAValide
-      * PERFORM WITH TEST AFTER UNTIL numeroAValide = 1
-      * DISPLAY "Quel animal voulez vous modifié ? Entrez son identifiant"
-      *        ACCEPT numA
-      *       MOVE numA to fa_numA
-      *        READ fanimaux
-      *                INVALID KEY DISPLAY "Animal non existant"
-      *                NOT INVALID KEY MOVE 1 TO numeroAValide
-      *        END-READ
-      *  END-PERFORM
-      *  MOVE numA to fa_numA.
-      * lecture direct + demande des nouveaux attributs
 
        SUPPRIMER_ANIMAL.
        OPEN I-O fanimaux
@@ -331,8 +315,14 @@
        READ fanimaux
            INVALID KEY DISPLAY "L'animal n'existe pas"
            NOT INVALID KEY 
-                STRING "test" INTO descriptionA
-                DISPLAY descriptionA
+                  STRING "ANIMAL n° " fa_numA ", Surnom :"
+                    fa_surnom ", Naissance :" fa_anneeNaissance
+                    ", Espece :" fa_espece ", Enclos :" fa_numEnclos
+                    ", Frequence repas : " fa_frequenceRepas
+                    ", Dernier vaccin : " fa_dernierVaccin
+                    ", Dernier repas : " fa_dernierRepas
+                    into descriptionA
+                    DISPLAY descriptionA
        END-READ
        CLOSE fanimaux.
        
@@ -355,6 +345,79 @@
                     DISPLAY descriptionA
             END-READ
         END-PERFORM
+        CLOSE fanimaux.
+
+        MODIFIER_ANIMAL.
+      * Demande du numéro de l'animal
+        DISPLAY "Quel est le numéro de l'animal à modifier ?"
+        ACCEPT numA
+
+      * Recherche de l'animal
+        OPEN I-O fanimaux
+        MOVE numA to fa_numA
+        MOVE 0 TO numeroAValide
+        READ fanimaux
+                INVALID KEY MOVE 0 TO numeroAValide
+                NOT INVALID KEY MOVE 1 TO numeroAValide
+        END-READ
+
+      * Modification de l'animal
+        IF numeroAValide = 0 THEN
+                DISPLAY "Cet animal n'existe pas"
+        END-IF
+        IF numeroAValide = 1 THEN
+                DISPLAY 'Que voulez-vous modifier ?'
+                DISPLAY '1 = Le surnom'
+                DISPLAY '2 = Annee de naissance '
+                DISPLAY '3 = Espece '
+                DISPLAY '4 = Numero enclos'
+                DISPLAY '5 = Frequence repas'
+                ACCEPT choixModif
+                EVALUATE  choixModif
+      * Modification du surnom
+                      WHEN "1"
+                                DISPLAY 'Nouveau surnom:'
+                                ACCEPT surnomA
+                                MOVE surnomA to fa_surnom
+                                DISPLAY 'surnom modifiée'
+      * Modification de l'annee de naissance
+                      WHEN "2"
+                                DISPLAY 'Nouvelle annee de naissance :'
+                                PERFORM WITH TEST 
+                                AFTER UNTIL aNaissA>1800 AND aNaissA<2019
+                                ACCEPT aNaissA
+                                END-PERFORM
+                                MOVE aNaissA to fa_anneeNaissance
+                                DISPLAY 'Annee de naissance modifiée'
+
+      * Modification de l'espece
+                      WHEN "3"
+                                DISPLAY 'Nouvelle espece :'
+                                MOVE especeA to fa_espece
+                                DISPLAY 'Espece modifiée'
+
+      * Modification du numéro de l'enclos
+                      WHEN "4"
+        PERFORM WITH TEST AFTER UNTIL enclosNonExistant = 1 
+        OR enclosComplet = 0
+                                DISPLAY 'Nouveau numéro enclos :'
+                                ACCEPT numEnclosA    
+                                MOVE numEnclosA TO CE
+                                PERFORM CAPACITE_ENCLOS   
+        END-PERFORM        
+                                MOVE numEnclosA to fa_numEnclos
+                                DISPLAY 'Numéro enclos modifié'
+
+      * Modification de la frequence
+                      WHEN "5"
+                               DISPLAY 'Nouvelle fréquence repas :'
+                               ACCEPT frequenceRepasA
+                               MOVE frequenceRepasA to fa_frequenceRepas
+                               DISPLAY 'Frquence repas modifié'
+                END-EVALUATE
+        END-IF
+        REWRITE anim_tamp
+        END-REWRITE
         CLOSE fanimaux.
 
       * --------------------GESTION ENCLOS-------------------------------------------
@@ -409,8 +472,8 @@
             DISPLAY '2 : Son etat'
            
 
-            ACCEPT choix
-            EVALUATE  choix
+            ACCEPT choixModif
+            EVALUATE  choixModif
             WHEN "1" 
 	            DISPLAY 'Nouvelle capacité de l enclos'
                 ACCEPT wCapEnclos
@@ -539,8 +602,8 @@
             DISPLAY '2 : Son numéro de téléphone?'
             DISPLAY '3 : Son type ?'
 
-            ACCEPT choix
-            EVALUATE  choix
+            ACCEPT choixModif
+            EVALUATE  choixModif
             WHEN "1" 
 	            DISPLAY 'Nouveau nom à l employé'
                 ACCEPT wNomEmpl
