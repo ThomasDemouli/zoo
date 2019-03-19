@@ -286,7 +286,7 @@
                 NOT INVALID KEY MOVE 1 TO bool
         END-READ
 
-      * Suppression du repas
+      * Modification du repas
         IF bool = 0 THEN
                 DISPLAY 'Ce repas n existe pas'
         END-IF
