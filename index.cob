@@ -100,7 +100,7 @@
 
         WORKING-STORAGE SECTION.
                 77 fin PIC 9.
-                77 choix PIC 9.
+                77 choix PIC A.
                 77 fdf PIC 9.
                 77 fenclCR pic 9(2).
                 77 fanimCR pic 9(2).
@@ -121,6 +121,8 @@
                 77 animalTrouve PIC 9(1).
                 77 numeroAnimal PIC 9(4).
 
+                77 phraseSoin PIC A(999).
+
         PROCEDURE DIVISION.
 
         OPEN INPUT fsoins
@@ -135,16 +137,21 @@
         STOP RUN.
 
         PROGRAMME_PRINCIPAL.
-
-        DISPLAY "       0: Quitter,
-                 1 : Ajouter un soin,
-                 2 : Lire tous les soins".
-        ACCEPT choix.
+        DISPLAY "a : Ajouter un soin,
+                 b : Lire tous les soins,
+                 c : Lire un soin,
+                 d : Modifier un soin,
+                 e : Supprimer un soin,
+                 z : Quitter"
+        ACCEPT choix
         EVALUATE choix
-        when "1" PERFORM AJOUT_SOIN
-        when "2" PERFORM READ_SOIN
-        when "0" move 1 to fin
-        when other DISPLAY "Commande non comprise" CHOIX
+            when "a" PERFORM AJOUT_SOIN
+            when "b" PERFORM AFFICHER_TOUS_LES_SOINS
+            when "c" PERFORM AFFICHER_UN_SOIN
+            when "d" PERFORM MODIFIER_UN_SOIN
+            when "e" PERFORM SUPPRIMER_UN_SOIN
+            when "z" move 1 to fin
+            when other DISPLAY "Commande non comprise" CHOIX
         END-EVALUATE.
 
         AJOUT_SOIN.
@@ -212,17 +219,16 @@
 
         PERFORM WITH TEST AFTER UNTIL typeSoin>0 AND typeSoin<4
                 DISPLAY "Quel est le type du soin ?"
-                DISPLAY "1 : Soin Maladie"
-                DISPLAY "2 : Soin Blessure"
-                DISPLAY "3 : Vaccin"
+                DISPLAY "a : Soin Maladie"
+                DISPLAY "b : Soin Blessure"
+                DISPLAY "c : Vaccin"
                 ACCEPT typeSoin
         END-PERFORM
-        MOVE jourSoin to fs_jour
 
         EVALUATE moisSoin
-        WHEN 1 MOVE "maladie" TO typeSoin
-        WHEN 2 MOVE "blessure" TO typeSoin
-        WHEN 3 MOVE "vaccin" TO typeSoin
+        WHEN "a" MOVE "maladie" TO typeSoin
+        WHEN "b" MOVE "blessure" TO typeSoin
+        WHEN "c" MOVE "vaccin" TO typeSoin
         END-EVALUATE
         MOVE typeSoin TO fs_type
 
@@ -244,32 +250,64 @@
         DISPLAY "Le soin a été créé !"
         CLOSE fsoins.
 
-
-
-        READ_SOIN.
+        AFFICHER_TOUS_LES_SOINS.
         OPEN INPUT fsoins
         MOVE 0 TO fdf
         PERFORM WITH TEST AFTER UNTIL fdf=1
-            READ fsoins
-                 AT END
-                       MOVE 1 TO fdf
-                       DISPLAY "Fin du fichier"
-                 NOT AT END
-                       DISPLAY "SOIN n°"
-                       DISPLAY fs_numS
-                       DISPLAY fs_type
-                       DISPLAY fs_descriptif
-                       DISPLAY "Le "
-                       DISPLAY fs_jour
-                       DISPLAY fs_mois
-                       DISPLAY fs_annee
-                       DISPLAY "Par le médecin n°"
-                       DISPLAY fs_numMedecin
-                       DISPLAY "Animal n°"
-                       DISPLAY fs_numA
+            READ fsoins NEXT
+                AT END
+                    DISPLAY "Fin du fichier"
+                    MOVE 1 TO fdf
+                NOT AT END
+        STRING "SOIN n°" fs_numS ", Type : " fs_type ", Descriptif : "
+        fs_descriptif ", Le " fs_jour "/" fs_mois "/" fs_annee
+        ", Par le médecin n°" fs_numMedecin ", Pour l'animal n°"
+        fs_numA INTO phraseSoin
+                    DISPLAY phraseSoin
             END-READ
         END-PERFORM
         CLOSE fsoins.
 
+        AFFICHER_UN_SOIN.
+        OPEN INPUT fsoins
+        DISPLAY "Quel est le numéro du soin ?"
+        ACCEPT numeroSoin
+        MOVE numeroSoin TO fs_numS
+        READ fsoins
+        INVALID KEY
+            DISPLAY "Le soin n existe pas"
+        NOT INVALID KEY
+        STRING "SOIN n°" fs_numS ", Type : " fs_type ", Descriptif : "
+        fs_descriptif ", Le " fs_jour "/" fs_mois "/" fs_annee
+        ", Par le médecin n°" fs_numMedecin ", Pour l'animal n°"
+        fs_numA INTO phraseSoin
+            DISPLAY phraseSoin
+        END-READ
+        CLOSE fsoins.
 
-        ATTENTION, LA METHODE 2 NE MARCHE PAS !!!!!!!!!!!
+        MODIFIER_UN_SOIN.
+        OPEN I-O fsoins
+        DISPLAY "Quel est le numéro du soin ?"
+        ACCEPT numeroSoin
+        MOVE numeroSoin TO fs_numS
+        READ fsoins
+        INVALID KEY
+            DISPLAY "Le soin n existe pas"
+        NOT INVALID KEY
+        END-READ
+        REWRITE soin_tamp
+        CLOSE fsoins.
+
+        SUPPRIMER_UN_SOIN.
+        OPEN I-O fsoins
+        DISPLAY "Quel est le numéro de l animal que vous voulez
+        supprimer ?"
+        ACCEPT numeroSoin
+        MOVE numeroSoin TO fs_numS
+        READ fsoins
+            INVALID KEY DISPLAY "Le soin n existe pas"
+            NOT INVALID KEY
+                DELETE fsoins RECORD
+                DISPLAY "Le soin a été supprimé !"
+        END-READ
+        CLOSE fsoins.
