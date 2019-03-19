@@ -105,6 +105,7 @@
 
                 77 choix pic 9.
                 77 bool pic 9.
+                77 wFin pic 9.
 
                 77 wNumR pic 9(9).
                 77 wDesc pic A(999).
@@ -127,6 +128,11 @@
                         OPEN OUTPUT frepas      
                 END-IF
         CLOSE frepas
+        OPEN INPUT femployes        
+                IF femplCR = 35 THEN
+                        OPEN OUTPUT femployes    
+                END-IF
+        CLOSE femployes
 
         DISPLAY '1 = AJOUT REPAS'
         DISPLAY '2 = SUPPRESSION REPAS'
@@ -138,7 +144,9 @@
 		        PERFORM AJOUT_REPAS
                   WHEN "2" 
                         PERFORM SUPPRESSION_REPAS
-      *           WHEN "3"
+                  WHEN "3"
+                        PERFORM AFFICHAGE
+      *           WHEN "4"
       *                 PERFORM MODIFIER_REPAS
         END-EVALUATE.
 
@@ -169,37 +177,38 @@
         MOVE wHeure to fr_heure
         
       * Demande du numéro du soigneur
-        MOVE 0 TO bool
-        OPEN OUTPUT femployes
-        PERFORM WITH TEST AFTER UNTIL bool = 1
-                DISPLAY 'Le numéro du soigneur'
-                ACCEPT wNumEmp
-                MOVE wNumEmp to fr_numSoigneur
-                READ femployes
-                        INVALID KEY MOVE 0 TO bool
-                        NOT INVALID KEY MOVE 1 TO bool
-                END-READ
-        END-PERFORM
+      * MOVE 0 TO bool
+      * OPEN OUTPUT femployes
+      * PERFORM WITH TEST AFTER UNTIL bool = 1
+      *         DISPLAY 'Le numéro du soigneur'
+      *         ACCEPT wNumEmp
+      *         MOVE wNumEmp to fr_numSoigneur
+      *         READ femployes
+      *                 INVALID KEY MOVE 0 TO bool
+      *                 NOT INVALID KEY MOVE 1 TO bool
+      *         END-READ
+      * END-PERFORM
+
+        DISPLAY 'Le numéro du soigneur'
+        ACCEPT wNumEmp
+        MOVE wNumEmp to fr_numSoigneur
+
         CLOSE femployes
 
       * Demande du numéro de l'animal
-        MOVE 0 TO bool
-        OPEN OUTPUT fanimaux
-        PERFORM WITH TEST AFTER UNTIL bool = 1
-                DISPLAY 'Le numéro de l animal'
-                ACCEPT wNumA
-                MOVE wNumA to fr_numAnimal
-                READ fanimaux
-                        INVALID KEY MOVE 0 TO bool
-                        NOT INVALID KEY MOVE 1 TO bool
-                END-READ
-        END-PERFORM
+
+        DISPLAY 'Le numéro de l animal'
+        ACCEPT wNumA
+        MOVE wNumA to fr_numAnimal
+
         CLOSE fanimaux
 
       * Demande du prix de repas
         DISPLAY 'Le prix du repas'
         ACCEPT wPrix
-
+        MOVE wPrix to fr_prixRepas
+        WRITE repa_tamp
+        END-WRITE
         CLOSE frepas.
 
 
@@ -221,10 +230,12 @@
       * Suppression du repas
         IF bool = 0 THEN
                 DISPLAY 'Ce repas n existe pas'
+                CLOSE frepas
         END-IF
         IF bool = 1 THEN
                 
-                DISPLAY 'animal supprimé'
+                DISPLAY 'repas supprimé'
+                CLOSE frepas
                 PERFORM MENU_REPAS
         END-IF.
 
@@ -246,3 +257,16 @@
       * Calcul de l'heure
         MULTIPLY wH BY 100 GIVING wHeure
         ADD wM TO wHeure GIVING wHeure.
+
+        AFFICHAGE.
+        OPEN INPUT frepas
+        MOVE 0 TO wfin
+        PERFORM WITH TEST AFTER UNTIL wfin = 1
+                READ frepas NEXT
+                AT END
+                        MOVE 1 TO wfin
+                NOT AT END
+                        DISPLAy fr_numR
+                END-READ
+        END-PERFORM
+        CLOSE frepas.
