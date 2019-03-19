@@ -99,7 +99,7 @@
         WORKING-STORAGE SECTION.
       * variable menu
                 77 fin pic 9.
-                77 choix pic 9(2).       
+                77 choix pic 9.       
 
 
                 77 fenclCR pic 9(2).
@@ -166,41 +166,67 @@
 
         MENU_ANIMAL.
 
-        DISPLAY "       0: Quitter,
-                 1 : Ajouter un animal,
-                 2 : Supprimer un animal,
-                 3 : Capaciter enclos,
-                 4 : Ajouter un enclos,
-                 5 : Modifier un enclos,
-                 6 : Afficher un enclos,
-                 7 : Afficher un animal,
-                 8 : Afficher tous les animaux,
-                 9 : Ajouter un employe,
-                 10: Modifier un employe,
-                 11: Supprimer un employe,
-                 12: Supprimer un enclos,
-                 13: Afficher un employe"
+        DISPLAY "Que voulez vous voir ?
+                0: Quitter,
+                1: les animaux,
+                2: les enclos ,
+                3: les employes
+                    "
 
-        ACCEPT choix
-        EVALUATE choix
-        when "1" PERFORM AJOUT_ANIMAL
-        when "2" PERFORM SUPPRIMER_ANIMAL
-        when "3" PERFORM CAPACITE_ENCLOS
-        when "4" PERFORM AJOUT_ENCLOS
-        when "5" PERFORM MODIF_ENCLOS
-        when "6" PERFORM AFFICHAGE_ENCLOS
-        when "7" PERFORM AFFICHER_ANIMAL
-        when "8" PERFORM AFFICHER_TOUS_LES_ANIMAUX
-        when "9" PERFORM AFFICHER_TOUS_LES_ANIMAUX
-        when "10" PERFORM AFFICHER_TOUS_LES_ANIMAUX
-        when "11" PERFORM AFFICHER_TOUS_LES_ANIMAUX
-        when "12" PERFORM AFFICHER_TOUS_LES_ANIMAUX
-        when "13" PERFORM AFFICHER_TOUS_LES_ANIMAUX
-        when "8" PERFORM AFFICHER_TOUS_LES_ANIMAUX
-        when "8" PERFORM AFFICHER_TOUS_LES_ANIMAUX
+           
+        accept choix
+        evaluate choix
+        when "1" 
+            display "Que voulez vous faire ?
+                    1 : Ajouter un animal,
+                    2 : Supprimer un animal,
+                    3 : Afficher un animal,
+                    4 : Afficher tous les animaux,
+                    "
+                    accept choix
+                    evaluate choix
+                    when "1" PERFORM AJOUT_ANIMAL
+                    when "2" PERFORM SUPPRIMER_ANIMAL
+                    when "3" PERFORM AFFICHER_ANIMAL
+                    when "4" PERFORM AFFICHER_TOUS_LES_ANIMAUX
+                    END-EVALUATE
+        when "2" 
+            display "Que voulez vous faire ?
+                    1 : Ajouter un enclos,
+                    2 : Modifier un enclos,
+                    3 : Afficher un enclos,
+                    4 : Capaciter enclos,
+                    5 : Supprimer un enclos,
+                    6 : verifier etat
+                " 
+                accept choix
+                evaluate choix
+                when "1" PERFORM AJOUT_ENCLOS
+                when "2" PERFORM MODIF_ENCLOS
+                when "3" PERFORM AFFICHAGE_ENCLOS
+                when "4" PERFORM CAPACITE_ENCLOS
+                when "5" PERFORM SUPPRESSION_ENCLOS
+                when "6" PERFORM AFFICHER_ENCLOS_ETAT
+                END-EVALUATE
+        when "3"
+            display "Que voulez vous faire ?
+                 1 : Ajouter un employe,
+                 2 : Modifier un employe,
+                 3 : Supprimer un employe,
+                 4 : Afficher un employe
+                "     
+                accept choix 
+                evaluate choix
+                when "1" PERFORM AJOUT_EMPLOYES
+                when "2" PERFORM MODIF_EMPLOYES
+                when "3" PERFORM SUPPRESSION_EMPLOYES
+                when "4" PERFORM AFFICHER_EMPLOYES
+                END-EVALUATE
+
         when "0" move 1 to fin
         when other DISPLAY "Commande non comprise" CHOIX
         END-EVALUATE.
+     
 
         AJOUT_ANIMAL.
         OPEN I-O fanimaux
@@ -462,7 +488,7 @@
         END-PERFORM
         CLOSE fenclos.
 
-        AFFICHAGE_EMPLOYES.
+        AFFICHER_EMPLOYES.
         OPEN INPUT fenclos
         MOVE 0 TO wfin
         PERFORM WITH TEST AFTER UNTIL wfin = 1
@@ -596,6 +622,30 @@
                 END-READ
         END-PERFORM
         CLOSE femployes.
+
+
+        AFFICHER_ENCLOS_ETAT.
+        OPEN INPUT fenclos
+        display "Vous voulez voir les enclos dans quel etat ?"
+        accept wEtatEnclos
+        PERFORM WITH TEST AFTER UNTIL wfin = 1
+                READ fenclos next
+                AT END  
+                        MOVE 1 TO wfin
+                NOT AT END
+                       if wEtatEnclos = fe_etat
+                          display "L enclos numéro "fe_numE" d une"
+                          display "capacité de" fe_capacite 
+                          display "est" fe_etat
+                                        
+                END-READ
+        END-PERFORM
+        close fenclos.
+
+        ENCLOS_COMPLET.
+        open input fenclos
+        open input fanimaux
+        
             
 
 
