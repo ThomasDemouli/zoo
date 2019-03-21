@@ -25,7 +25,6 @@
         SELECT femployes ASSIGN TO "employes.dat"
         ORGANIZATION INDEXED
         RECORD KEY fem_numEmp
-        ALTERNATE RECORD KEY fem_dateEmbauche with duplicates
         ACCESS MODE DYNAMIC
         FILE STATUS is femplCR.
 
@@ -71,9 +70,9 @@
                         02 fem_nom pic A(30).
                         02 fem_prenom pic A(30).
                         02 fem_dateNaissance pic A(10).
-                        02 fem_annee_embauche pic A(4).
-                        02 fem_mois_embauche pic A(2).
-                        02 fem_jour_embauche pic A(2).
+                        02 fem_annee_embauche pic 9(4).
+                        02 fem_mois_embauche pic 9(2).
+                        02 fem_jour_embauche pic 9(2).
                         02 fem_telephone pic 9(10).
                         02 fem_type pic A(20).
 
@@ -434,11 +433,11 @@
         AFFICHAGE_REPAS.
       * Parcours séquentiel des repas
         OPEN INPUT frepas
-        MOVE 0 TO wfin
-        PERFORM WITH TEST AFTER UNTIL wfin = 1
+        MOVE 0 TO fin
+        PERFORM WITH TEST AFTER UNTIL fin = 1
                 READ frepas NEXT
                 AT END
-                        MOVE 1 TO wfin
+                        MOVE 1 TO fin
                 NOT AT END
                         STRING fr_numR "|" fr_description "|" fr_jour
                         "|" fr_mois "|" fr_annee "|" fr_heure "|"  
@@ -447,8 +446,7 @@
                         DISPLAY wPhrase
                 END-READ
         END-PERFORM
-        CLOSE frepas
-        PERFORM APPELER_MENU.
+        CLOSE frepas.
 
       ******************************************************************
         MODIFIER_REPAS.
@@ -606,8 +604,7 @@
                     DISPLAY phraseSoin
             END-READ
         END-PERFORM
-        CLOSE fsoins
-        PERFORM APPELER_MENU.
+        CLOSE fsoins.
 
       ******************************************************************
         AFFICHER_UN_SOIN.
@@ -625,8 +622,7 @@
         fs_numA INTO phraseSoin
             DISPLAY phraseSoin
         END-READ
-        CLOSE fsoins
-        PERFORM APPELER_MENU.
+        CLOSE fsoins.
 
       ******************************************************************
         MODIFIER_UN_SOIN.
@@ -905,8 +901,7 @@
                     into descriptionA
                     DISPLAY descriptionA
        END-READ
-       CLOSE fanimaux
-       PERFORM APPELER_MENU.
+       CLOSE fanimaux.
        
 
       ******************************************************************
@@ -929,8 +924,7 @@
                     DISPLAY descriptionA
             END-READ
         END-PERFORM
-        CLOSE fanimaux
-        PERFORM APPELER_MENU.
+        CLOSE fanimaux.
 
 
       ******************************************************************
@@ -1057,7 +1051,7 @@
         DISPLAY 'Date de naissance de l employé'
         ACCEPT wDatenaissance
         DISPLAY 'Date d embauche de l employé'
-        ACCEPT wDateEmbauche
+        PERFORM DEMANDER_DATE
         DISPLAY 'Numéro de l employé'
         ACCEPT wtelephone
         DISPLAY 'Type de l employé'
@@ -1068,7 +1062,9 @@
             MOVE wNomEmpl TO fem_nom
             MOVE wPrenomEmpl TO fem_prenom
             MOVE wDatenaissance TO fem_dateNaissance
-            MOVE wDateEmbauche TO fem_dateEmbauche
+            MOVE annee TO fem_annee_embauche
+            MOVE mois TO fem_mois_embauche
+            MOVE jour TO fem_jour_embauche
             MOVE wtelephone TO fem_telephone
             MOVE wType TO fem_type
             WRITE empl_tamp
@@ -1142,23 +1138,24 @@
       ******************************************************************
         AFFICHAGE_EMPLOYES.
         OPEN INPUT femployes
-        MOVE 0 TO wfin
-        PERFORM WITH TEST AFTER UNTIL wfin = 1
+        MOVE 0 TO fin
+        PERFORM WITH TEST AFTER UNTIL fin = 1
                 READ femployes next
                 AT END  
-                        MOVE 1 TO wfin
+                        MOVE 1 TO fin
                 NOT AT END
                         DISPLAY fem_numEmp
                         DISPLAY fem_nom
                         DISPLAY fem_prenom
                         DISPLAY fem_dateNaissance  
-                        DISPLAY fem_dateEmbauche  
+                        DISPLAY fem_annee_embauche
+                        DISPLAY fem_mois_embauche
+                        DISPLAY fem_jour_embauche  
                         DISPLAY fem_telephone
                         DISPLAY fem_type
                 END-READ
         END-PERFORM
-        CLOSE femployes
-        PERFORM APPELER_MENU.
+        CLOSE femployes.
 
 
       ******************************************************************
@@ -1199,6 +1196,7 @@
         DISPLAY '4 : Capaciter enclos'
         DISPLAY '5 : Supprimer un enclos'
         DISPLAY '6 : verifier etat'
+        DISPLAY '7 : verifier capacite enclos'
         DISPLAY '0 : Retour'
         ACCEPT choix
         EVALUATE choix
@@ -1208,6 +1206,7 @@
                 when "4" PERFORM CAPACITE_ENCLOS
                 when "5" PERFORM SUPPRESSION_ENCLOS
                 when "6" PERFORM AFFICHER_ENCLOS_ETAT
+                when "7" PERFORM ENCLOS_COMPLET
                 WHEN "0" PERFORM APPELER_MENU
                 WHEN other DISPLAY "Commande non comprise" CHOIX
         END-EVALUATE.
@@ -1296,11 +1295,32 @@
                 READ fenclos
                 INVALID KEY  DISPLAY "l'enclos n'existe pas" 
                 NOT INVALID KEY MOVE 1 TO idIdentique 
-                END-READ
-            END-PERFORM
+                     MOVE fe_capacite TO capaciteEnclos
+            END-READ
+         END-PERFORM
 
-        if idIdentique = 1 then
+      * on verifie si il est vide
+        OPEN INPUT fanimaux
+        MOVE wId TO fa_numEnclos
+        MOVE 0 TO fdf
+        START fanimaux, KEY IS = fa_numEnclos
+            INVALID KEY DISPLAY ' '
+            NOT INVALID KEY 
+            PERFORM WITH TEST AFTER UNTIL fdf=1
+                READ fanimaux NEXT 
+                    AT END MOVE 1 TO fdf
+                    NOT AT END  ADD 1 TO cptCE
+                END-READ 
+            END-PERFORM
+        END-START 
+        CLOSE fanimaux
+
+
+        if idIdentique = 1 and cptCE = 0 then
             delete fenclos record 
+            DISPLAY "Enclos supprimé"
+        else 
+            DISPLAY " Erreur : Enclos non vide "
         end-if
         close fenclos.
 
@@ -1308,19 +1328,18 @@
       ******************************************************************
         AFFICHAGE_ENCLOS.
         OPEN INPUT fenclos
-        MOVE 0 TO wfin
-        PERFORM WITH TEST AFTER UNTIL wfin = 1
+        MOVE 0 TO fin
+        PERFORM WITH TEST AFTER UNTIL fin = 1
                 READ fenclos next
                 AT END  
-                        MOVE 1 TO wfin
+                        MOVE 1 TO fin
                 NOT AT END
                         DISPLAY fe_numE
                         DISPLAY fe_capacite
                         DISPLAY fe_etat
                 END-READ
         END-PERFORM
-        CLOSE fenclos
-        PERFORM APPELER_MENU.
+        CLOSE fenclos.
 
 
       ******************************************************************
@@ -1328,10 +1347,11 @@
         OPEN INPUT fenclos
         display "Vous voulez voir les enclos dans quel etat ?"
         accept wEtatEnclos
-        PERFORM WITH TEST AFTER UNTIL wfin = 1
+        MOVE 0 TO fin
+        PERFORM WITH TEST AFTER UNTIL fin = 1
                 READ fenclos next
                 AT END  
-                        MOVE 1 TO wfin
+                        MOVE 1 TO fin
                 NOT AT END
                        if wEtatEnclos = fe_etat
                           display "L enclos numéro "fe_numE" d une"
@@ -1341,3 +1361,44 @@
                 END-READ
         END-PERFORM
         close fenclos.
+
+      ******************************************************************
+        ENCLOS_COMPLET.
+        MOVE 0 TO enclosNonExistant
+        OPEN INPUT fenclos
+        PERFORM WITH TEST AFTER UNTIL enclosNonExistant = 1
+            DISPLAY "Rentrez le numero de l'enclos dont vous voulez "
+            DISPLAY "connaitre sa capacite"
+            ACCEPT wId
+            MOVE wId to fe_numE
+            READ fenclos
+                INVALID KEY DISPLAY "Enclos non existant"
+                NOT INVALID KEY 
+                    MOVE 1 TO enclosNonExistant
+                    MOVE fe_capacite TO capaciteEnclos
+            END-READ
+         END-PERFORM
+        CLOSE fenclos
+      * on verifie la place restante 
+        OPEN INPUT fanimaux
+        MOVE wId TO fa_numEnclos
+        MOVE 0 TO fdf
+        START fanimaux, KEY IS = fa_numEnclos
+            INVALID KEY DISPLAY ' '
+            NOT INVALID KEY 
+            PERFORM WITH TEST AFTER UNTIL fdf=1
+                READ fanimaux NEXT 
+                    AT END MOVE 1 TO fdf
+                    NOT AT END  ADD 1 TO cptCE
+                END-READ 
+            END-PERFORM
+        END-START 
+        CLOSE fanimaux
+        IF capaciteEnclos - cptCE <=0 THEN 
+                DISPLAY "L'enclos est complet"
+
+           ELSE
+            COMPUTE cptCE = capaciteEnclos - cptCE 
+            DISPLAY "Il reste ", cptCE 
+                    " places dans l'enclos"  
+        END-IF.      
