@@ -1173,6 +1173,7 @@
         DISPLAY '4 : Capaciter enclos'
         DISPLAY '5 : Supprimer un enclos'
         DISPLAY '6 : verifier etat'
+        DISPLAY '7 : verifier capacite enclos'
         DISPLAY '0 : Retour'
         ACCEPT choix
         EVALUATE choix
@@ -1182,6 +1183,7 @@
                 when "4" PERFORM CAPACITE_ENCLOS
                 when "5" PERFORM SUPPRESSION_ENCLOS
                 when "6" PERFORM AFFICHER_ENCLOS_ETAT
+                when "7" PERFORM ENCLOS_COMPLET
                 WHEN "0" PERFORM APPELER_MENU
                 WHEN other DISPLAY "Commande non comprise" CHOIX
         END-EVALUATE.
@@ -1270,11 +1272,31 @@
                 READ fenclos
                 INVALID KEY  DISPLAY "l'enclos n'existe pas" 
                 NOT INVALID KEY MOVE 1 TO idIdentique 
-                END-READ
+                     MOVE fe_capacite TO capaciteEnclos
+            END-READ
+         END-PERFORM
+      * on verifie la place restante 
+        OPEN INPUT fanimaux
+        MOVE wId TO fa_numEnclos
+        MOVE 0 TO fdf
+        START fanimaux, KEY IS = fa_numEnclos
+            INVALID KEY DISPLAY ' '
+            NOT INVALID KEY 
+            PERFORM WITH TEST AFTER UNTIL fdf=1
+                READ fanimaux NEXT 
+                    AT END MOVE 1 TO fdf
+                    NOT AT END  ADD 1 TO cptCE
+                END-READ 
             END-PERFORM
+        END-START 
+        CLOSE fanimaux
 
-        if idIdentique = 1 then
+
+        if idIdentique = 1 and cptCE = 0 then
             delete fenclos record 
+            DISPLAY "Enclos supprimé"
+        else 
+            DISPLAY " Erreur : Enclos non vide "
         end-if
         close fenclos.
 
@@ -1315,3 +1337,44 @@
                 END-READ
         END-PERFORM
         close fenclos.
+
+      ******************************************************************
+        ENCLOS_COMPLET.
+        MOVE 0 TO enclosNonExistant
+        OPEN INPUT fenclos
+        PERFORM WITH TEST AFTER UNTIL enclosNonExistant = 1
+            DISPLAY "Rentrez le numero de l'enclos dont vous voulez "
+            DISPLAY "connaitre sa capacite"
+            ACCEPT wId
+            MOVE wId to fe_numE
+            READ fenclos
+                INVALID KEY DISPLAY "Enclos non existant"
+                NOT INVALID KEY 
+                    MOVE 1 TO enclosNonExistant
+                    MOVE fe_capacite TO capaciteEnclos
+            END-READ
+         END-PERFORM
+        CLOSE fenclos
+      * on verifie la place restante 
+        OPEN INPUT fanimaux
+        MOVE wId TO fa_numEnclos
+        MOVE 0 TO fdf
+        START fanimaux, KEY IS = fa_numEnclos
+            INVALID KEY DISPLAY ' '
+            NOT INVALID KEY 
+            PERFORM WITH TEST AFTER UNTIL fdf=1
+                READ fanimaux NEXT 
+                    AT END MOVE 1 TO fdf
+                    NOT AT END  ADD 1 TO cptCE
+                END-READ 
+            END-PERFORM
+        END-START 
+        CLOSE fanimaux
+        IF capaciteEnclos - cptCE <=0 THEN 
+                DISPLAY "L'enclos est complet"
+
+           ELSE
+            COMPUTE cptCE = capaciteEnclos - cptCE 
+            DISPLAY "Il reste ", cptCE 
+                    " places dans l'enclos"  
+        END-IF.      
