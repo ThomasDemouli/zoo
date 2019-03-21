@@ -176,10 +176,8 @@
                  7 : Afficher un animal,
                  8 : Afficher tous les animaux,
                  9 : Ajouter un employe,
-                 10: Modifier un employe,
-                 11: Supprimer un employe,
-                 12: Supprimer un enclos,
-                 13: Afficher un employe"
+                 10: Verifier si un enclos est complet,
+                 11: Supprimer un enclos"
 
         ACCEPT choix
         EVALUATE choix
@@ -192,15 +190,59 @@
         when "07" PERFORM AFFICHER_ANIMAL
         when "08" PERFORM AFFICHER_TOUS_LES_ANIMAUX
         when "09" PERFORM MODIFIER_ANIMAL
-        when "10" PERFORM AFFICHER_TOUS_LES_ANIMAUX
-        when "11" PERFORM AFFICHER_TOUS_LES_ANIMAUX
-        when "12" PERFORM AFFICHER_TOUS_LES_ANIMAUX
-        when "13" PERFORM AFFICHER_TOUS_LES_ANIMAUX
+        when "10" PERFORM ENCLOS_COMPLET
+        when "11" PERFORM SUPPRESSION_ENCLOS
+
         when "0" move 1 to fin
         when other DISPLAY "Commande non comprise" CHOIX
         END-EVALUATE.
 
-        AJOUT_ANIMAL.
+        ENCLOS_COMPLET.
+        MOVE 0 TO enclosNonExistant
+        OPEN INPUT fenclos
+        PERFORM WITH TEST AFTER UNTIL enclosNonExistant = 1
+            DISPLAY "Rentrez le numero de l'enclos dont vous voulez "
+            DISPLAY "connaitre sa capacite"
+            ACCEPT wId
+            MOVE wId to fe_numE
+            READ fenclos
+                INVALID KEY DISPLAY "Enclos non existant"
+                NOT INVALID KEY 
+                    MOVE 1 TO enclosNonExistant
+                    MOVE fe_capacite TO capaciteEnclos
+            END-READ
+         END-PERFORM
+        CLOSE fenclos
+      * on verifie la place restante 
+        OPEN INPUT fanimaux
+        MOVE wId TO fa_numEnclos
+        MOVE 0 TO fdf
+        START fanimaux, KEY IS = fa_numEnclos
+            INVALID KEY DISPLAY ' '
+            NOT INVALID KEY 
+            PERFORM WITH TEST AFTER UNTIL fdf=1
+                READ fanimaux NEXT 
+                    AT END MOVE 1 TO fdf
+                    NOT AT END  ADD 1 TO cptCE
+                END-READ 
+            END-PERFORM
+        END-START 
+        CLOSE fanimaux
+        IF capaciteEnclos - cptCE <=0 THEN 
+                DISPLAY "L'enclos est complet"
+
+           ELSE
+            COMPUTE cptCE = capaciteEnclos - cptCE 
+            DISPLAY "Il reste ", cptCE 
+                    " places dans l'enclos"  
+        END-IF.
+
+      *************************************************************************
+      *************************************************************************
+      ************************* FONCTION DEJA EXISTANTE ***********************
+      *************************************************************************
+      *************************************************************************
+       AJOUT_ANIMAL.
         OPEN I-O fanimaux
         MOVE 0 TO numeroAValide
         PERFORM WITH TEST AFTER UNTIL numeroAValide = 1
@@ -238,13 +280,13 @@
             READ fenclos
                 INVALID KEY DISPLAY "Enclos non existant"
                 NOT INVALID KEY  
-                MOVE 1 TO enclosNonExistant 
+                MOVE 1 TO enclosNonExistant
                 MOVE numEnclosA TO CE
                 PERFORM CAPACITE_ENCLOS
                 IF enclosComplet = 1 THEN
                     DISPLAY "Cet enclos est complet"
                 END-IF
-            END-READ 
+            END-READ
         END-PERFORM
         CLOSE fenclos
         MOVE numEnclosA to fa_numEnclos
@@ -263,7 +305,6 @@
                 INVALID KEY DISPLAY "ERREUR : animal non ajouté"
                 NOT INVALID KEY DISPLAY "Animal ajouté !"
         END-WRITE
-        DISPLAY 
         CLOSE fanimaux.
             
       * procedure determinant si un enclos est complet ou pas
@@ -500,11 +541,31 @@
                 READ fenclos
                 INVALID KEY  DISPLAY "l'enclos n'existe pas" 
                 NOT INVALID KEY MOVE 1 TO idIdentique 
-                END-READ
+                     MOVE fe_capacite TO capaciteEnclos
+            END-READ
+         END-PERFORM
+      * on verifie la place restante 
+        OPEN INPUT fanimaux
+        MOVE wId TO fa_numEnclos
+        MOVE 0 TO fdf
+        START fanimaux, KEY IS = fa_numEnclos
+            INVALID KEY DISPLAY ' '
+            NOT INVALID KEY 
+            PERFORM WITH TEST AFTER UNTIL fdf=1
+                READ fanimaux NEXT 
+                    AT END MOVE 1 TO fdf
+                    NOT AT END  ADD 1 TO cptCE
+                END-READ 
             END-PERFORM
+        END-START 
+        CLOSE fanimaux
 
-        if idIdentique = 1 then
+
+        if idIdentique = 1 and cptCE = 0 then
             delete fenclos record 
+            DISPLAY "Enclos supprimé"
+        else 
+            DISPLAY " Erreur : Enclos non vide "
         end-if
         close fenclos.
 
