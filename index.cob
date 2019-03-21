@@ -71,7 +71,9 @@
                         02 fem_nom pic A(30).
                         02 fem_prenom pic A(30).
                         02 fem_dateNaissance pic A(10).
-                        02 fem_dateEmbauche pic A(10).
+                        02 fem_jour_embauche pic 9(2).
+                        02 fem_mois_embauche pic 9(2).
+                        02 fem_annee_embauche pic 9(4).
                         02 fem_telephone pic 9(10).
                         02 fem_type pic A(20).
 
@@ -642,9 +644,26 @@
         END-PERFORM
         close fenclos.
 
-        ENCLOS_COMPLET.
-        open input fenclos
-        open input fanimaux
+       
+
+        NOUVEL_EMPLOYE
+         OPEN INPUT femployes
+        
+        PERFORM WITH TEST AFTER UNTIL wfin = 1
+                MOVE FUNCTION CURRENT-DATE(1:8) TO wdatejour
+                READ fenclos next
+                AT END  
+                        MOVE 1 TO wfin
+                NOT AT END
+                       if  fem_annee_embauche = fe_etat
+                          display "L enclos numéro "fe_numE" d une"
+                          display "capacité de" fe_capacite 
+                          display "est" fe_etat
+                                        
+                END-READ
+        END-PERFORM
+        close fenclos.
+        
         
             
 
