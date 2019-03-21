@@ -71,7 +71,9 @@
                         02 fem_nom pic A(30).
                         02 fem_prenom pic A(30).
                         02 fem_dateNaissance pic A(10).
-                        02 fem_dateEmbauche pic A(10).
+                        02 fem_annee_embauche pic A(4).
+                        02 fem_mois_embauche pic A(2).
+                        02 fem_jour_embauche pic A(2).
                         02 fem_telephone pic 9(10).
                         02 fem_type pic A(20).
 
@@ -165,15 +167,17 @@
                 77 wId pic 9(3).
                 77 wNomEmpl pic A(25).
                 77 wPrenomEmpl pic A(25).
-                77 wDatenaissance pic A(10).
-                77 wDateEmbauche pic A(10).       
+                77 wDatenaissance pic A(10).      
                 77 wtelephone pic 9(10).
                 77 wtype pic A(20).
                 77 wCapEnclos pic 9(2).
                 77 wEtatEnclos pic A(20).
-
                 77 idIdentique pic 9.
                 77 idNonIdentique pic 9.
+                77 wdatecourante pic 9(4).
+                77 wjourEmbauche pic 9(2).
+                77 wmoisEmbauche pic 9(2).
+                77 wanneeEmbauche pic 9(4).
 
         PROCEDURE DIVISION.
 
@@ -1155,6 +1159,28 @@
         END-PERFORM
         CLOSE femployes
         PERFORM APPELER_MENU.
+
+
+      ******************************************************************
+        NOUVEL_EMPLOYE.
+        OPEN INPUT femployes
+        MOVE FUNCTION CURRENT-DATE(1:4) TO wdatecourante
+        PERFORM WITH TEST AFTER UNTIL wfin = 1
+                
+                READ femployes next
+                AT END  
+                        MOVE 1 TO wfin
+                NOT AT END
+                       if  fem_annee_embauche = wdatecourante
+                            DISPLAY fem_nom
+                            DISPLAY fem_prenom
+                            DISPLAY fem_type
+                            display "a ete embauché cette annee"
+                END-READ
+                       
+        END-PERFORM
+        close femployes.
+
 
 
 
