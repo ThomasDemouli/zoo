@@ -142,7 +142,7 @@
                 77 typeSoinValide PIC 9(1).
                 77 phraseSoin PIC A(999).
 
-      * variable ajout_animal / modif_animal / suppr_animal
+      * variables ajout_animal / modif_animal / suppr_animal
                 77 numeroAValide pic 9.
                 77 enclosNonExistant pic 9.
                 77 numA pic 9(3).
@@ -156,13 +156,13 @@
                 77 descriptionA pic A(999).
                 77 choixModif pic 9.
 
-      * variable capacite_enclos
+      * variables capacite_enclos
                 77 CE pic 9.
                 77 enclosComplet pic 9.
                 77 cptCE pic 9(3).
                 77 capaciteEnclos pic 9(2).
 
-      * variable enclos / employes
+      * variables enclos / employes
                 77 wId pic 9(3).
                 77 wNomEmpl pic A(25).
                 77 wPrenomEmpl pic A(25).
@@ -235,7 +235,6 @@
                         PERFORM MENU_SOINS
                   WHEN "5"
                         PERFORM MENU_REPAS
-
                   WHEN "0" 
                         MOVE 1 TO wfin
                   WHEN other 
@@ -301,6 +300,9 @@
                 ACCEPT jour
         END-PERFORM.
 
+
+
+
       ***********************************
       *                                 *
       *         FONCTIONS REPAS         *
@@ -344,7 +346,7 @@
         END-PERFORM
 
       * Demande de la description du repas
-        DISPLAY 'La descritpion du repas'
+        DISPLAY 'La description du repas'
         ACCEPT wDesc
         MOVE wDesc to fr_description
 
@@ -758,6 +760,8 @@
         DISPLAY '3 : Afficher un animal'
         DISPLAY '4 : Afficher tous les animaux'
         DISPLAY '5 : Modifier un animal'
+        DISPLAY '6 : Liste des soins administrés à un animal'
+        DISPLAY '7 : Liste des repas d un animal'
         DISPLAY '0 : Retour'
         ACCEPT choix
         EVALUATE choix
@@ -766,6 +770,8 @@
                 WHEN "3" PERFORM AFFICHER_ANIMAL
                 WHEN "4" PERFORM AFFICHER_TOUS_LES_ANIMAUX
                 WHEN "5" PERFORM MODIFIER_ANIMAL
+                WHEN "6" PERFORM SOINSADMINISTREANIMAL
+                WHEN "7" PERFORM LISTE_REPAS_ANIMAL
                 WHEN "0" PERFORM APPELER_MENU
                 WHEN other DISPLAY "Commande non comprise" CHOIX
         END-EVALUATE.
@@ -1002,7 +1008,61 @@
         CLOSE fanimaux.
 
 
+      ******************************************************************
+        SOINSADMINISTREANIMAL.
+        OPEN INPUT fsoins
+        DISPLAY 'Quel est le numero de l animal'
+        ACCEPT wNumA
+        MOVE wNumA TO fs_numA
+        MOVE 0 TO fdf
+        START fsoins, KEY IS = fs_numA
+             INVALID KEY DISPLAY 'L animal n a recu aucun soin'
+             NOT INVALID KEY PERFORM WITH TEST AFTER UNTIL fdf=1
+                   READ fsoins NEXT
+                   AT END MOVE 1 TO fdf
+                   NOT AT END DISPLAY fs_numS
+                   END-READ
+            END-PERFORM                     
+        END-START
+        CLOSE fsoins.
 
+
+      ******************************************************************
+        LISTE_REPAS_ANIMAL.
+        OPEN INPUT fanimaux
+        MOVE 0 TO animalTrouve
+        PERFORM WITH TEST AFTER UNTIL animalTrouve = 1
+                DISPLAY "Quel est le numéro de l animal ?"
+                ACCEPT numeroAnimal
+                MOVE numeroAnimal TO fa_numA
+               READ fanimaux
+               INVALID KEY DISPLAY "L animal n existe pas"
+               NOT INVALID KEY
+                    MOVE 1 TO animalTrouve
+                    MOVE fa_surnom TO surnomA
+               END-READ
+        END-PERFORM
+        CLOSE fanimaux
+        DISPLAY "L'animal ", surnomA, " de numéro ", numeroAnimal","
+        DISPLAY "a eu pour repas :"
+        OPEN INPUT frepas
+        MOVE numeroAnimal TO fr_numAnimal
+            START frepas, KEY IS = fr_numAnimal
+            INVALID KEY DISPLAY 'Aucun repas'
+            NOT INVALID KEY
+            PERFORM WITH TEST AFTER UNTIL fdf=1
+                READ frepas NEXT
+                    AT END MOVE 1 TO fdf
+                    NOT AT END  
+                    DISPLAY "Numéro du repas :", fr_numR
+                    DISPLAY "Description du repas :", fr_description
+                    DISPLAY "Date :", fr_jour SPACE fr_mois
+                                      SPACE fr_annee, " à :"
+                                      fr_heure
+                END-READ
+            END-PERFORM
+        END-START
+        CLOSE frepas.
 
       **************************************
       *                                    *
@@ -1016,6 +1076,7 @@
         DISPLAY '2 : Modifier un employe'
         DISPLAY '3 : Supprimer un employe'
         DISPLAY '4 : Afficher un employe'  
+        DISPLAY '5 : Affiche les nouveaux employes'
         DISPLAY '0 : Retour'   
         ACCEPT choix 
         EVALUATE choix
@@ -1023,6 +1084,7 @@
                 WHEN "2" PERFORM MODIF_EMPLOYES
                 WHEN "3" PERFORM SUPPRESSION_EMPLOYES
                 WHEN "4" PERFORM AFFICHAGE_EMPLOYES
+                WHEN "5" PERFORM NOUVEL_EMPLOYE
                 WHEN "0" PERFORM APPELER_MENU
                 WHEN other DISPLAY "Commande non comprise" CHOIX
         END-EVALUATE.
@@ -1052,7 +1114,7 @@
         ACCEPT wDatenaissance
         DISPLAY 'Date d embauche de l employé'
         PERFORM DEMANDER_DATE
-        DISPLAY 'Numéro de l employé'
+        DISPLAY 'Numéro de téléphone de l employé'
         ACCEPT wtelephone
         DISPLAY 'Type de l employé'
         ACCEPT wType
