@@ -155,6 +155,15 @@
                 77 dernierVaccinA pic 9(9).
                 77 descriptionA pic A(999).
                 77 choixModif pic 9.
+        	    77 nbJoursDiff PIC 9(7).
+        	    77 dateRepas PIC 9(8).
+        		77 phraseBesoin PIC A(100).
+        		77 phrasePrix PIC A(200).
+                77 fdz PIC 9(1).
+                77 cptrRepas PIC 9(9).
+                77 sommePrix PIC 9(9).
+                77 prixMoyen PIC 9(3).
+                77 res PIC 9(3).
 
       * variables capacite_enclos
                 77 CE pic 9.
@@ -166,7 +175,7 @@
                 77 wId pic 9(3).
                 77 wNomEmpl pic A(25).
                 77 wPrenomEmpl pic A(25).
-                77 wDatenaissance pic A(10).      
+                77 wDatenaissance pic A(10).
                 77 wtelephone pic 9(10).
                 77 wtype pic A(20).
                 77 wCapEnclos pic 9(2).
@@ -190,32 +199,32 @@
       *                                    *
       **************************************
         MENU_PRINCIPAL.
-        OPEN INPUT frepas        
+        OPEN INPUT frepas
                 IF frepaCR = 35 THEN
-                        OPEN OUTPUT frepas      
+                        OPEN OUTPUT frepas
                 END-IF
         CLOSE frepas
-        OPEN INPUT femployes        
+        OPEN INPUT femployes
                 IF femplCR = 35 THEN
-                        OPEN OUTPUT femployes    
+                        OPEN OUTPUT femployes
                 END-IF
         CLOSE femployes
-        OPEN INPUT fanimaux        
+        OPEN INPUT fanimaux
                 IF fanimCR = 35 THEN
-                        OPEN OUTPUT fanimaux    
+                        OPEN OUTPUT fanimaux
                 END-IF
         CLOSE fanimaux
-        OPEN INPUT fenclos        
+        OPEN INPUT fenclos
                 IF fenclCR = 35 THEN
-                        OPEN OUTPUT fenclos    
+                        OPEN OUTPUT fenclos
                 END-IF
         CLOSE fenclos
-        OPEN INPUT fsoins        
+        OPEN INPUT fsoins
                 IF fsoinCR = 35 THEN
-                        OPEN OUTPUT fsoins    
+                        OPEN OUTPUT fsoins
                 END-IF
         CLOSE fsoins
-        
+
         DISPLAY 'Que voulez vous faire ?'
         DISPLAY '1 = Gérer les animaux'
         DISPLAY '2 = Gérer les employés'
@@ -225,9 +234,9 @@
         DISPLAY '0 = Quitter'
         ACCEPT choix
         EVALUATE  choix
-                  WHEN "1" 
+                  WHEN "1"
        	                PERFORM MENU_ANIMAUX
-                  WHEN "2" 
+                  WHEN "2"
                         PERFORM MENU_EMPLOYES
                   WHEN "3"
                         PERFORM MENU_ENCLOS
@@ -235,9 +244,9 @@
                         PERFORM MENU_SOINS
                   WHEN "5"
                         PERFORM MENU_REPAS
-                  WHEN "0" 
+                  WHEN "0"
                         MOVE 1 TO wfin
-                  WHEN other 
+                  WHEN other
                         DISPLAY "Commande non comprise " CHOIX
         END-EVALUATE.
 
@@ -317,9 +326,9 @@
         DISPLAY '0 = Retour'
         ACCEPT choix
         EVALUATE  choix
-	          WHEN "1" 
+	          WHEN "1"
 		        PERFORM AJOUT_REPAS
-                  WHEN "2" 
+                  WHEN "2"
                         PERFORM SUPPRESSION_REPAS
                   WHEN "3"
                         PERFORM AFFICHAGE_REPAS
@@ -359,7 +368,7 @@
       * Demande de l'heure
         PERFORM DEMANDER_HEURE
         MOVE wHeure to fr_heure
-        
+
       * Demande du numéro du soigneur
         MOVE 0 TO bool
         OPEN INPUT femployes
@@ -442,7 +451,7 @@
                         MOVE 1 TO fin
                 NOT AT END
                         STRING fr_numR "|" fr_description "|" fr_jour
-                        "|" fr_mois "|" fr_annee "|" fr_heure "|"  
+                        "|" fr_mois "|" fr_annee "|" fr_heure "|"
                         fr_numSoigneur "|" fr_numAnimal "|" fr_prixRepas
                         INTO wPhrase
                         DISPLAY wPhrase
@@ -569,7 +578,7 @@
         END-PERFORM
 
         PERFORM AJOUT_DESCRIPTION_SOIN
-        PERFORM AJOUT_DATE_SOIN 
+        PERFORM AJOUT_DATE_SOIN
         PERFORM AJOUT_SOIGNEUR_SOIN
         PERFORM AJOUT_TYPE_SOIN
         PERFORM AJOUT_ANIMAL_SOIN
@@ -635,7 +644,7 @@
         READ fsoins
         INVALID KEY
             DISPLAY "Le soin n existe pas"
-        NOT INVALID KEY 
+        NOT INVALID KEY
             DISPLAY "Quel attribut voulez-vous modifier ?"
                      DISPLAY "1 : La Description,"
                      DISPLAY "2 : La Date,"
@@ -644,17 +653,17 @@
                      DISPLAY "5 : L animal qui a été soigné"
             ACCEPT choix
             EVALUATE choix
-                when "1" 
+                when "1"
                     PERFORM AJOUT_DESCRIPTION_SOIN
-                when "2" 
+                when "2"
                     PERFORM AJOUT_DATE_SOIN
-                when "3" 
+                when "3"
                     PERFORM AJOUT_SOIGNEUR_SOIN
-                when "4" 
+                when "4"
                     PERFORM AJOUT_TYPE_SOIN
-                when "5" 
+                when "5"
                     PERFORM AJOUT_ANIMAL_SOIN
-                when other  
+                when other
                 DISPLAY "Commande non comprise" CHOIX
             END-EVALUATE
         END-READ
@@ -762,6 +771,8 @@
         DISPLAY '5 : Modifier un animal'
         DISPLAY '6 : Liste des soins administrés à un animal'
         DISPLAY '7 : Liste des repas d un animal'
+        DISPLAY '8 : Voir quel animal a besoin d etre nourri'
+        DISPLAY '9 : Définir le prix moyen d un repas'
         DISPLAY '0 : Retour'
         ACCEPT choix
         EVALUATE choix
@@ -772,6 +783,8 @@
                 WHEN "5" PERFORM MODIFIER_ANIMAL
                 WHEN "6" PERFORM SOINSADMINISTREANIMAL
                 WHEN "7" PERFORM LISTE_REPAS_ANIMAL
+                WHEN "8" PERFORM ANIMAUX_BESOIN_REPAS
+                WHEN "9" PERFORM PRIX_MOYEN_REPAS
                 WHEN "0" PERFORM APPELER_MENU
                 WHEN other DISPLAY "Commande non comprise" CHOIX
         END-EVALUATE.
@@ -790,20 +803,20 @@
                      NOT INVALID KEY MOVE 0 TO numeroAValide
              END-READ
         END-PERFORM
-     
+
         DISPLAY "Quel est son surnom?"
         ACCEPT surnomA
-        
+
 
         PERFORM WITH TEST AFTER UNTIL aNaissA>1800 AND aNaissA<2019
              DISPLAY "Quelle est son année de naissance?"
              ACCEPT aNaissA
         END-PERFORM
 
-        
+
         DISPLAY "Quel est son espece?"
         ACCEPT especeA
-        
+
 
         MOVE 1 TO enclosComplet
         MOVE 0 TO enclosNonExistant
@@ -815,7 +828,7 @@
             MOVE numEnclosA to fe_numE
             READ fenclos
                 INVALID KEY DISPLAY "Enclos non existant"
-                NOT INVALID KEY  
+                NOT INVALID KEY
                 MOVE 1 TO enclosNonExistant
                 MOVE numEnclosA TO CE
                 PERFORM CAPACITE_ENCLOS
@@ -831,18 +844,18 @@
         ACCEPT frequenceRepasA
         MOVE frequenceRepasA to fa_frequenceRepas
         MOVE especeA to fa_espece
-        MOVE surnomA to fa_surnom    
-        MOVE numA TO fa_numA        
-        MOVE aNaissA to fa_anneeNaissance   
+        MOVE surnomA to fa_surnom
+        MOVE numA TO fa_numA
+        MOVE aNaissA to fa_anneeNaissance
         MOVE 0 to fa_dernierRepas
-        MOVE 0 to fa_dernierVaccin  
+        MOVE 0 to fa_dernierVaccin
         DISPLAY fa_numA
         WRITE anim_tamp
                 INVALID KEY DISPLAY "ERREUR : animal non ajouté"
                 NOT INVALID KEY DISPLAY "Animal ajouté !"
         END-WRITE
         CLOSE fanimaux.
-            
+
 
       ******************************************************************
       * procedure determinant si un enclos est complet ou pas
@@ -864,11 +877,11 @@
                   AT END MOVE 1 TO fdf
                   NOT AT END  ADD 1 TO cptCE
                   END-READ
-            END-PERFORM                     
+            END-PERFORM
        END-START
        IF capaciteEnclos - cptCE <=0 THEN
                 MOVE 1 TO enclosComplet
- 
+
            ELSE
                 MOVE 0 TO enclosComplet
        END-IF.
@@ -908,7 +921,7 @@
                     DISPLAY descriptionA
        END-READ
        CLOSE fanimaux.
-       
+
 
       ******************************************************************
         AFFICHER_TOUS_LES_ANIMAUX.
@@ -919,7 +932,7 @@
                 AT END
                     DISPLAY "fin de fichier"
                     MOVE 1 TO fdf
-                NOT AT END  
+                NOT AT END
                     STRING "ANIMAL n° " fa_numA ", Surnom :"
                     fa_surnom ", Naissance :" fa_anneeNaissance
                     ", Espece :" fa_espece ", Enclos :" fa_numEnclos
@@ -988,10 +1001,10 @@
         PERFORM WITH TEST AFTER UNTIL enclosNonExistant = 1
         OR enclosComplet = 0
                                 DISPLAY 'Nouveau numéro enclos :'
-                                ACCEPT numEnclosA    
+                                ACCEPT numEnclosA
                                 MOVE numEnclosA TO CE
-                                PERFORM CAPACITE_ENCLOS   
-        END-PERFORM        
+                                PERFORM CAPACITE_ENCLOS
+        END-PERFORM
                                 MOVE numEnclosA to fa_numEnclos
                                 DISPLAY 'Numéro enclos modifié'
 
@@ -1022,7 +1035,7 @@
                    AT END MOVE 1 TO fdf
                    NOT AT END DISPLAY fs_numS
                    END-READ
-            END-PERFORM                     
+            END-PERFORM
         END-START
         CLOSE fsoins.
 
@@ -1053,7 +1066,7 @@
             PERFORM WITH TEST AFTER UNTIL fdf=1
                 READ frepas NEXT
                     AT END MOVE 1 TO fdf
-                    NOT AT END  
+                    NOT AT END
                     DISPLAY "Numéro du repas :", fr_numR
                     DISPLAY "Description du repas :", fr_description
                     DISPLAY "Date :", fr_jour SPACE fr_mois
@@ -1075,10 +1088,10 @@
         DISPLAY '1 : Ajouter un employe'
         DISPLAY '2 : Modifier un employe'
         DISPLAY '3 : Supprimer un employe'
-        DISPLAY '4 : Afficher un employe'  
+        DISPLAY '4 : Afficher un employe'
         DISPLAY '5 : Affiche les nouveaux employes'
-        DISPLAY '0 : Retour'   
-        ACCEPT choix 
+        DISPLAY '0 : Retour'
+        ACCEPT choix
         EVALUATE choix
                 WHEN "1" PERFORM AJOUT_EMPLOYES
                 WHEN "2" PERFORM MODIF_EMPLOYES
@@ -1101,9 +1114,9 @@
             MOVE wId to fem_numEmp
             READ femployes
                 INVALID KEY MOVE 1 TO idNonIdentique
-                NOT INVALID KEY DISPLAY "l'employé existe deja" 
+                NOT INVALID KEY DISPLAY "l'employé existe deja"
             END-READ
-           
+
         END-PERFORM
 
         DISPLAY 'Nom de l employe'
@@ -1118,8 +1131,8 @@
         ACCEPT wtelephone
         DISPLAY 'Type de l employé'
         ACCEPT wType
- 
-        IF idNonIdentique = 1 THEN  
+
+        IF idNonIdentique = 1 THEN
             MOVE wId TO fem_numEmp
             MOVE wNomEmpl TO fem_nom
             MOVE wPrenomEmpl TO fem_prenom
@@ -1133,8 +1146,8 @@
             END-WRITE
         END-IF
         CLOSE femployes.
-      
-            
+
+
       ******************************************************************
         MODIF_EMPLOYES.
         OPEN i-o femployes
@@ -1144,12 +1157,12 @@
                 ACCEPT wId
                 MOVE wId to fem_numEmp
                 READ femployes
-                INVALID KEY  DISPLAY "l'employé n'existe pas" 
-                NOT INVALID KEY MOVE 1 TO idIdentique 
+                INVALID KEY  DISPLAY "l'employé n'existe pas"
+                NOT INVALID KEY MOVE 1 TO idIdentique
                 END-READ
             END-PERFORM
 
-          IF idIdentique = 1 THEN 
+          IF idIdentique = 1 THEN
             DISPLAY 'Que voulez vous modifier ?'
             DISPLAY '1 : Son nom ? ?'
             DISPLAY '2 : Son numéro de téléphone?'
@@ -1157,20 +1170,20 @@
 
             ACCEPT choix
             EVALUATE  choix
-            WHEN "1" 
+            WHEN "1"
 	            DISPLAY 'Nouveau nom à l employé'
                 ACCEPT wNomEmpl
                 MOVE wNomEmpl to fem_nom
-            WHEN "2" 
+            WHEN "2"
 	            DISPLAY 'Nouveau numéro de tél de l employé'
                ACCEPT wtelephone
                MOVE wtelephone TO fem_telephone
-            WHEN "3" 
+            WHEN "3"
 	            DISPLAY 'Nouveau type à l employé'
                ACCEPT wtype
                MOVE wtype TO fem_type
             END-EVALUATE
-        
+
         END-IF
         REWRITE empl_tamp
         END-REWRITE
@@ -1186,13 +1199,13 @@
                 ACCEPT wId
                 MOVE wId to fem_numEmp
                 READ femployes
-                INVALID KEY  DISPLAY "l'employé n'existe pas" 
-                NOT INVALID KEY MOVE 1 TO idIdentique 
+                INVALID KEY  DISPLAY "l'employé n'existe pas"
+                NOT INVALID KEY MOVE 1 TO idIdentique
                 END-READ
             END-PERFORM
 
         if idIdentique = 1 then
-            delete femployes record 
+            delete femployes record
         end-if
         close femployes.
 
@@ -1203,16 +1216,16 @@
         MOVE 0 TO fin
         PERFORM WITH TEST AFTER UNTIL fin = 1
                 READ femployes next
-                AT END  
+                AT END
                         MOVE 1 TO fin
                 NOT AT END
                         DISPLAY fem_numEmp
                         DISPLAY fem_nom
                         DISPLAY fem_prenom
-                        DISPLAY fem_dateNaissance  
+                        DISPLAY fem_dateNaissance
                         DISPLAY fem_annee_embauche
                         DISPLAY fem_mois_embauche
-                        DISPLAY fem_jour_embauche  
+                        DISPLAY fem_jour_embauche
                         DISPLAY fem_telephone
                         DISPLAY fem_type
                 END-READ
@@ -1225,9 +1238,9 @@
         OPEN INPUT femployes
         MOVE FUNCTION CURRENT-DATE(1:4) TO wdatecourante
         PERFORM WITH TEST AFTER UNTIL wfin = 1
-                
+
                 READ femployes next
-                AT END  
+                AT END
                         MOVE 1 TO wfin
                 NOT AT END
                        if  fem_annee_embauche = wdatecourante
@@ -1236,7 +1249,7 @@
                             DISPLAY fem_type
                             display "a ete embauché cette annee"
                 END-READ
-                       
+
         END-PERFORM
         close femployes.
 
@@ -1286,7 +1299,7 @@
             READ fenclos
             INVALID KEY  MOVE 1 TO idIdentique
             NOT INVALID KEY DISPLAY "l'enclos existe deja"
-              
+
             END-READ
         END-PERFORM
         CLOSE fenclos
@@ -1295,8 +1308,8 @@
         DISPLAY 'Etat de l enclos'
         ACCEPT wEtatEnclos
         CLOSE fenclos
- 
-         IF idIdentique = 1 THEN 
+
+         IF idIdentique = 1 THEN
             OPEN i-o fenclos
             MOVE wId TO fe_numE
             MOVE wCapEnclos TO fe_capacite
@@ -1316,30 +1329,30 @@
                 ACCEPT wId
                 MOVE wId to fe_numE
                 READ fenclos
-                INVALID KEY  DISPLAY "l'enclos n'existe pas" 
-                NOT INVALID KEY MOVE 1 TO idIdentique 
+                INVALID KEY  DISPLAY "l'enclos n'existe pas"
+                NOT INVALID KEY MOVE 1 TO idIdentique
                 END-READ
             END-PERFORM
 
-          IF idIdentique = 1 THEN 
+          IF idIdentique = 1 THEN
             DISPLAY 'Que voulez vous modifier ?'
             DISPLAY '1 : Sa capacité ? ?'
             DISPLAY '2 : Son etat'
-           
+
 
             ACCEPT choix
             EVALUATE  choix
-            WHEN "1" 
+            WHEN "1"
 	            DISPLAY 'Nouvelle capacité de l enclos'
                 ACCEPT wCapEnclos
                 MOVE wCapEnclos to fe_capacite
-            WHEN "2" 
+            WHEN "2"
 	            DISPLAY 'Nouvel etat de l enclos'
                ACCEPT wEtatEnclos
                MOVE wEtatEnclos TO fe_etat
-            
+
             END-EVALUATE
-        
+
         END-IF
         REWRITE encl_tamp
         END-REWRITE
@@ -1355,8 +1368,8 @@
                 ACCEPT wId
                 MOVE wId to fe_numE
                 READ fenclos
-                INVALID KEY  DISPLAY "l'enclos n'existe pas" 
-                NOT INVALID KEY MOVE 1 TO idIdentique 
+                INVALID KEY  DISPLAY "l'enclos n'existe pas"
+                NOT INVALID KEY MOVE 1 TO idIdentique
                      MOVE fe_capacite TO capaciteEnclos
             END-READ
          END-PERFORM
@@ -1367,33 +1380,33 @@
         MOVE 0 TO fdf
         START fanimaux, KEY IS = fa_numEnclos
             INVALID KEY DISPLAY ' '
-            NOT INVALID KEY 
+            NOT INVALID KEY
             PERFORM WITH TEST AFTER UNTIL fdf=1
-                READ fanimaux NEXT 
+                READ fanimaux NEXT
                     AT END MOVE 1 TO fdf
                     NOT AT END  ADD 1 TO cptCE
-                END-READ 
+                END-READ
             END-PERFORM
-        END-START 
+        END-START
         CLOSE fanimaux
 
 
         if idIdentique = 1 and cptCE = 0 then
-            delete fenclos record 
+            delete fenclos record
             DISPLAY "Enclos supprimé"
-        else 
+        else
             DISPLAY " Erreur : Enclos non vide "
         end-if
         close fenclos.
 
-       
+
       ******************************************************************
         AFFICHAGE_ENCLOS.
         OPEN INPUT fenclos
         MOVE 0 TO fin
         PERFORM WITH TEST AFTER UNTIL fin = 1
                 READ fenclos next
-                AT END  
+                AT END
                         MOVE 1 TO fin
                 NOT AT END
                         DISPLAY fe_numE
@@ -1412,14 +1425,14 @@
         MOVE 0 TO fin
         PERFORM WITH TEST AFTER UNTIL fin = 1
                 READ fenclos next
-                AT END  
+                AT END
                         MOVE 1 TO fin
                 NOT AT END
                        if wEtatEnclos = fe_etat
                           display "L enclos numéro "fe_numE" d une"
-                          display "capacité de" fe_capacite 
+                          display "capacité de" fe_capacite
                           display "est" fe_etat
-                                        
+
                 END-READ
         END-PERFORM
         close fenclos.
@@ -1435,32 +1448,98 @@
             MOVE wId to fe_numE
             READ fenclos
                 INVALID KEY DISPLAY "Enclos non existant"
-                NOT INVALID KEY 
+                NOT INVALID KEY
                     MOVE 1 TO enclosNonExistant
                     MOVE fe_capacite TO capaciteEnclos
             END-READ
          END-PERFORM
         CLOSE fenclos
-      * on verifie la place restante 
+      * on verifie la place restante
         OPEN INPUT fanimaux
         MOVE wId TO fa_numEnclos
         MOVE 0 TO fdf
         START fanimaux, KEY IS = fa_numEnclos
             INVALID KEY DISPLAY ' '
-            NOT INVALID KEY 
+            NOT INVALID KEY
             PERFORM WITH TEST AFTER UNTIL fdf=1
-                READ fanimaux NEXT 
+                READ fanimaux NEXT
                     AT END MOVE 1 TO fdf
                     NOT AT END  ADD 1 TO cptCE
-                END-READ 
+                END-READ
             END-PERFORM
-        END-START 
+        END-START
         CLOSE fanimaux
-        IF capaciteEnclos - cptCE <=0 THEN 
+        IF capaciteEnclos - cptCE <=0 THEN
                 DISPLAY "L'enclos est complet"
-
            ELSE
-            COMPUTE cptCE = capaciteEnclos - cptCE 
-            DISPLAY "Il reste ", cptCE 
-                    " places dans l'enclos"  
-        END-IF.      
+            COMPUTE cptCE = capaciteEnclos - cptCE
+            DISPLAY "Il reste ", cptCE
+                    " places dans l'enclos"
+        END-IF.
+
+      *****************************************************************
+        	ANIMAUX_BESOIN_REPAS.
+        	OPEN INPUT fanimaux
+            MOVE 0 TO fdf
+            PERFORM WITH TEST AFTER UNTIL fdf=1
+                READ fanimaux NEXT
+                AT END
+                    DISPLAY "Traitement terminé"
+                    MOVE 1 TO fdf
+                NOT AT END
+        			OPEN INPUT frepas
+        			MOVE fa_dernierRepas TO fr_numR
+        			READ frepas
+                  INVALID KEY
+                      DISPLAY "Le repas n existe plus"
+                  NOT INVALID KEY
+         COMPUTE dateRepas = fr_annee * 10000 + fr_mois * 100 + fr_jour
+          COMPUTE nbJoursDiff = FUNCTION
+          INTEGER-OF-DATE(FUNCTION CURRENT-DATE(1:8)) - FUNCTION
+          INTEGER-OF-DATE(dateRepas)
+                      IF nbJoursDiff >= fa_frequenceRepas THEN
+            STRING " Cet animal a besoin d etre nourri : " fa_surnom
+            " n°" fa_numA INTO phraseBesoin
+                			DISPLAY phraseBesoin
+            			END-IF
+                  END-READ
+        			CLOSE frepas
+                END-READ
+            END-PERFORM
+            CLOSE fanimaux.
+
+      ****************************************************************
+          PRIX_MOYEN_REPAS.
+          OPEN INPUT fanimaux
+          DISPLAY "De quel animal voulez-vous étudier les prix de son
+          repas ?"
+          ACCEPT numeroAnimal
+          MOVE numeroAnimal TO fa_numA
+          READ fanimaux
+          INVALID KEY
+              DISPLAY "L animal n existe pas"
+          NOT INVALID KEY
+              OPEN INPUT frepas
+                  MOVE 0 TO fdz
+                  MOVE fa_numA TO fr_numAnimal
+                  START frepas, KEY IS = fr_numAnimal
+          		INVALID KEY
+                      DISPLAY "Cet animal ne possède aucun repas"
+                  NOT INVALID KEY
+                      PERFORM WITH TEST AFTER UNTIL fdz=1
+                          READ frepas NEXT
+                          AT END
+                              MOVE 1 TO fdz
+                          NOT AT END
+                              ADD fr_prixRepas TO sommePrix
+                              ADD 1 TO cptrRepas
+                          END-READ
+                  END-PERFORM
+                  COMPUTE prixMoyen = sommePrix / cptrRepas
+                  STRING "Le prix moyen de l animal " fa_surnom " n°"
+                  fa_numA " est de " prixMoyen "€" INTO phrasePrix
+                  DISPLAY phrasePrix
+              END-START
+              CLOSE frepas
+          END-READ
+          CLOSE fanimaux.
